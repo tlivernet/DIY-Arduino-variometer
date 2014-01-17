@@ -27,9 +27,11 @@ Présentation
 
 Ce variomètre utilise un minimum de commande pour naviguer dans le menu et interagir avec l'interface. Nous utilisons un encodeur digital permettant trois actions: Gauche - Droite - Valider.
 
-L'écran est celui d'un Nokia 5110, donc plutôt petit comparé aux variomètres du commerce, mais les informations essentielles y sont affichées.
+L'écran est celui d'un Nokia 5110, donc plutôt petit comparé aux variomètres du commerce, mais les informations essentielles y sont affichées. Ce variomètre produit des "bips" qui sont aussi bien émis lors de la navigation dans le menu quel lors de l'utilisation de l'interface vario. 
+Le volume est bien entendu paramétrable ainsi que la sensibilité de déclenchement en monté et en descente.
 
 En plus de fournir des informations en temps réel, un système de détection automatique du début et de fin de vol permet d'obtenir des statistiques intéressantes.
+
 
 Menu :
 --------------

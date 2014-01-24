@@ -16,7 +16,7 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 - DC-DC Converter Step Up 1-5V 500mA | 1,13 €
 - 3,7V 600mAh LiPo Battery | 3,25 €
 - RTC Module for Arduino | 1,54 €
-- 3x 10k Ohm resistor | 0,03 €
+- 3x 10k Ohm resistor + 2x 100k Ohm resistor | 0,05 €
 - Right Angle Mini Slide Switch | 0,10 €	
 	
 **TOTAL	| 21,36 €**
@@ -39,11 +39,7 @@ Menu :
 - Vario
 - Stats
 	- Retour
-	- Chrono
-	- AltMin
-	- AltMax
-	- Tx Max
-	- Tx Min
+	- Statistique
 	- Reset
 - Options
 	- Retour
@@ -66,6 +62,7 @@ Affichage dynamique des éléments suivants :
 - Temps de vol (heure : minute : seconde)
 - Heure
 - Température
+- Batterie
 
 Le réglage du volume est possible en tournant l'encodeur digital.
 Lors d'un appui long sur le poussoir de l'encodeur, les statistiques sont réinitialisées.
@@ -80,27 +77,33 @@ Lorsqu'il n'y a pas de baisse ou de prise d'altitude significative depuis un cer
 
 A la fin du vol les statistiques sont enregistrés en dur donc ne sont pas perdus à l'extinction du variomètre.
 
+Ce programme peut enregistrer 5 rapports de vol. Une fois un vol terminé, la piste suivante d'enregistrement est sélectionnée.
+
+
+**Statistique**
+
 Voici les informations statistiques disponibles :
 
-**Chrono**
+- Date
+	- Date et heure de début de vol.
 
-Temps de vol enregistré, exprimé en heure : minute : seconde.
+- Chrono
+	- Temps de vol enregistré, exprimé en heure : minute : seconde.
 
-**AltMin**
+- AltMin
+	- L'altitude minimum en mètre enregistré pendant le vol.
 
-L'altitude minimum en mètre enregistré pendant le vol.
+- AltMax
+	- L'altitude maximum en mètre enregistré pendant le vol.
 
-**AltMax**
+- Tx Max
+	- Le taux de chute maximum en mètre par seconde enregistré pendant le vol.
 
-L'altitude maximum en mètre enregistré pendant le vol.
+- Tx Min
+	- Le taux de chute minimum en mètre par seconde enregistré pendant le vol.
 
-**Tx Max**
-
-Le taux de chute maximum en mètre par seconde enregistré pendant le vol.
-
-**Tx Min**
-
-Le taux de chute minimum en mètre par seconde enregistré pendant le vol.
+- Cumul
+	- Altitude cumulée du vol (en mètre).
 
 **Reset**
 
@@ -134,10 +137,6 @@ Intensité du rétro-éclairage (Off à 5)
 
 Ajustement du contraste de l'écran.
 
-**Heure**
+**Date**
 
-Réglage de l'heure de la pendule.
-
-**Minute**
-
-Réglage des minutes de la pendule.
+Réglage de la date et de l'heure de la pendule.

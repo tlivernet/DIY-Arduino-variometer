@@ -864,26 +864,32 @@ void loop()
 
   // set up my_temperature
   bmp085.getTemperature(&my_temperature);
+  
   // take new altitude in meters
   Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure, my_temperature) + conf.currentAltitude;
-
   float tempo = millis();
 
-  float D2 = (tim - tempo);
-  float N1 = D2 * alt;
-  float N2 = D2 * (alt + Altitude);
-  float D1 = D2 * D2;
+  //float D2 = (tim - tempo);
+  //float N1 = D2 * alt;
+  //float N2 = D2 * (alt + Altitude);
+  //float D1 = D2 * D2;
+  /*
+        = (2 * N1 - N2) / D1
+	= 2 * (D2 * alt) - D2 * (alt + Altitude) / (tim - tempo)²
+	= 2 * (D2 * alt) - (D2 * alt + D2 * Altitude) / (tim - tempo)²
+	= (D2 * alt) + (D2 * alt) - (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
+	= (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
+	= D2 * (alt - Altitude) / (tim - tempo)²
+	= ((tim - tempo) * (alt - Altitude)) / (tim - tempo)²
+	= (alt - Altitude) / (tim - tempo)
+  */
+  
+  //vario = vario * 0.80 + (1000 * (2 * N1 - N2) / D1) * 0.2;
+  vario = vario * 0.80 + (1000 * 0.2 * ((alt - Altitude) / (tim - tempo)));
 
   alt = Altitude;
   tim = tempo;
-  /*
-  2 * (D2 * alt) - D2 * (alt + Altitude)
-  2 * (D2 * alt) - (D2 * alt + D2 * Altitude)
-  (D2 * alt) + (D2 * alt) - D2 * alt + D2 * Altitude
-  */
-
-  vario = vario * 0.80 + (1000 * (2 * N1 - N2) / D1) * 0.2;
-
+  
   // Update stats if chrono is running
   if (stat.chrono_start != 0) {
 

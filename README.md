@@ -8,22 +8,23 @@ Projet de variomètre sur Arduino :
 --------------
 
 Le but de ce projet est de fabriquer un variomètre à faible coût pour une utilisation en vol libre (dans mon cas la pratique du parapente).
-Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay international :
+Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay international (prix de janvier 2014) :
 
-- Arduino nano V3.0	| 5,10 €
-- Nokia LCD 5110 | 2,03 €
-- BMP085 Digital Barometric Pressure Sensor	| 2,88 €
-- Digital Push Button Switch Rotary Encoder	| 4,21 €
-- Mini USB Battery Charging Board 5V | 0,93 €
-- Buzzer | 0,16 €
-- DC-DC Converter Step Up 1-5V 500mA | 1,13 €
-- 3,7V 600mAh LiPo Battery | 3,25 €
-- RTC Module for Arduino | 1,54 €
-- 3x 10k Ohm resistor + 1x 100k Ohm resistor + 1x 110 Ohm resistor | 0,1 €
-- Right Angle Mini Slide Switch | 0,10 €	
+- Arduino nano V3.0	| 5,10€
+- Nokia LCD 5110 | 2€
+- BMP085 Digital Barometric Pressure Sensor	| 2,90€
+- Digital Push Button Switch Rotary Encoder	| 4,20€
+- Mini USB Battery Charging Board 5V | 0,90€
+- Buzzer 8 ohm | 0,20€
+- DC-DC Converter Step Up 1-5V 500mA | 1,15€
+- 3,7V 600mAh LiPo Battery | 3,25€
+- RTC Module for Arduino | 1,55€
+- 3x 10k Ohm resistor + 1x 100k Ohm resistor + 1x 110 Ohm resistor | 0,10€
+- Right Angle Mini Slide Switch | 0,10€	
 - Cables | 3€
+- Plastic Electronics Project Box Enclosure DIY 27x60x100mm | 2,40€
 
-**TOTAL	| 24,41 €**
+**TOTAL	| 26,85 €**
 
 
 Présentation
@@ -31,7 +32,7 @@ Présentation
 
 Ce variomètre utilise un minimum de commande pour naviguer dans le menu et interagir avec l'interface. Nous utilisons un encodeur digital permettant trois actions: Gauche - Droite - Valider.
 
-L'écran est celui d'un Nokia 5110, donc plutôt petit comparé aux variomètres du commerce, mais les informations essentielles y sont affichées. Ce variomètre produit des "bips" qui sont aussi bien émis lors de la navigation dans le menu quel lors de l'utilisation de l'interface vario. 
+L'écran est celui d'un Nokia 5110, donc plutôt petit comparé aux variomètres du commerce, mais les informations essentielles y sont affichées. Ce variomètre produit des "bips" qui sont aussi bien émis lors de la navigation dans le menu que lors de l'utilisation de l'interface vario. 
 Le volume est bien entendu paramétrable ainsi que la sensibilité de déclenchement en monté et en descente.
 
 En plus de fournir des informations en temps réel, un système de détection automatique du début et de fin de vol permet d'obtenir des statistiques intéressantes.
@@ -43,7 +44,7 @@ Menu :
 - Vario
 - Stats
 	- Retour
-	- Statistique
+	- Statistiques
 	- Reset
 - Options
 	- Retour
@@ -53,8 +54,7 @@ Menu :
 	- Desc
 	- Light
 	- Contra
-	- Heure
-	- Minute
+	- Date
 
 Vario :
 --------------

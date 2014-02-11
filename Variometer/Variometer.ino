@@ -720,7 +720,7 @@ void menuSetup()
   m_options.name = F("Options"); //Options
   m_stats.name = F("Stats"); //Stats
   m_retour.name = F("Retour"); //Retour
-  m_tare.name = F("Alti 0"); //Tare
+  m_tare.name = F("Tare"); //Tare
   m_altitude.name = F("Alti"); //Altitude
   m_montee.name = F("Montee"); //Montée
   m_descente.name = F("Desc"); //Descente

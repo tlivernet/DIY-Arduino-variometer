@@ -1,7 +1,7 @@
 Arduino-variometer
 ==================
 
-![alt tag](https://raw.github.com/sinseman/Arduino-variometer/blob/master/Variometer.png)
+![alt tag](https://github.com/sinseman/Arduino-variometer/blob/master/Variometer.png?raw=true)
 
 
 Projet de variomètre sur Arduino :

@@ -4,7 +4,7 @@
 #include <Encoder.h>
 #include <Wire.h>  //i2c library
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BMP085_U.h>                 //bmp085 library, download from url link (1)
+#include <Adafruit_BMP085_U.h>
 #include <toneAC.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
@@ -147,16 +147,16 @@ struct Stat
 };
 
 
-void readStat(uint8_t index = conf.stat_index, Stat &value = stat) 
+void readStat(uint8_t index = conf.stat_index, Stat &value = stat)
 {
   EEPROM_readAnything(sizeof(Conf) + sizeof(Stat) * index, value);
 }
-void writeStat(uint8_t index = conf.stat_index, Stat &value = stat) 
+void writeStat(uint8_t index = conf.stat_index, Stat &value = stat)
 {
   EEPROM_writeAnything(sizeof(Conf) + sizeof(Stat) * index, value);
 }
 
-void incrementStatIndex() 
+void incrementStatIndex()
 {
   conf.stat_index++;
   if (conf.stat_index > NB_STATS - 1)
@@ -165,7 +165,7 @@ void incrementStatIndex()
   readStat();
 }
 
-void resetStat(uint8_t index = conf.stat_index, bool sound = true) 
+void resetStat(uint8_t index = conf.stat_index, bool sound = true)
 {
   stat.chrono_start = 0;
   stat.chrono = 0;
@@ -185,7 +185,7 @@ void resetStat(uint8_t index = conf.stat_index, bool sound = true)
   }
 }
 
-void resetAllStats() 
+void resetAllStats()
 {
   for (uint8_t i = 0; i < NB_STATS; i++) {
     readStat(i);
@@ -198,20 +198,20 @@ void resetAllStats()
   playConfirmMelody();
 }
 
-void playConfirmMelody() 
+void playConfirmMelody()
 {
   toneAC(700, 8, 150);
   toneAC(500, 8, 150);
 }
 
-void initEeprom() 
+void initEeprom()
 {
   EEPROM_writeAnything(0, conf);
   resetAllStats();
 }
 
 
-void renderChrono(Stat value = stat) 
+void renderChrono(Stat value = stat)
 {
   uint16_t s;
   if (value.chrono == 0 && value.chrono_start != 0) {
@@ -236,7 +236,7 @@ void renderChrono(Stat value = stat)
   display.print(s);
 }
 
-void renderVario() 
+void renderVario()
 {
   display.fillRect(0, 0, 84, 32, WHITE);
   // text display tests
@@ -297,7 +297,7 @@ void renderVario()
   display.setTextColor(BLACK);
   display.setCursor(0, 41);
   display.fillRect(0, 41, 84, 7, WHITE);
-  
+
   display.print(F("M"));
   display.print(conf.stat_index + 1);
   display.print(F(" "));
@@ -318,7 +318,7 @@ void renderVarioBar()
   display.display();
 }
 
-void renderVolume(uint8_t dir = MENU_RIGHT) 
+void renderVolume(uint8_t dir = MENU_RIGHT)
 {
   display.clearDisplay();
   display.setTextSize(2);
@@ -337,7 +337,7 @@ void renderVolume(uint8_t dir = MENU_RIGHT)
   display.display();
 }
 
-float updateConfItem(float var, uint8_t dir = 2, float increment = 1) 
+float updateConfItem(float var, uint8_t dir = 2, float increment = 1)
 {
   // save the configuration if a parameter is validate.
   if (menuUsed_last == true && menuUsed == false) {
@@ -355,15 +355,15 @@ float updateConfItem(float var, uint8_t dir = 2, float increment = 1)
   return var;
 }
 
-void renderStatItem(float value, const __FlashStringHelper *unit, bool integer = false) 
+void renderStatItem(float value, const __FlashStringHelper *unit, bool integer = false)
 {
   menuUsed = false;
   display.setTextColor(BLACK);
 
-  if (integer == true){
+  if (integer == true) {
     display.print((int)value);
   }
-  else {    
+  else {
     if (value < 0)
       display.print(F("-"));
     float value_abs = abs(value);
@@ -376,63 +376,63 @@ void renderStatItem(float value, const __FlashStringHelper *unit, bool integer =
   display.println(unit);
 }
 
-void renderZero(int value) 
+void renderZero(int value)
 {
   if (value <  10)
     display.print(F("0"));
 }
 
 
-void renderDateTime(DateTime d, uint8_t bold = 0) 
+void renderDateTime(DateTime d, uint8_t bold = 0)
 {
-  //display date  
+  //display date
   if (bold == DATE_DAY)
-    display.setTextColor(WHITE, BLACK);    
+    display.setTextColor(WHITE, BLACK);
   renderZero(d.day());
   display.print(d.day());
-  
+
   if (bold != 0)
     display.setTextColor(BLACK);
   display.print(F("/"));
-  
+
   if (bold == DATE_MONTH)
-    display.setTextColor(WHITE, BLACK);  
+    display.setTextColor(WHITE, BLACK);
   renderZero(d.month());
   display.print(d.month());
-  
+
   if (bold != 0)
-    display.setTextColor(BLACK);  
+    display.setTextColor(BLACK);
   display.print(F("/"));
-  
+
   if (bold == DATE_YEAR)
-    display.setTextColor(WHITE, BLACK);  
+    display.setTextColor(WHITE, BLACK);
   renderZero(d.year() - 2000);
   display.print(d.year() - 2000); //reduces the length of the year string
-  
+
   if (bold != 0)
     display.setTextColor(BLACK);
   display.print(F(" "));
-  
+
   //display time
   if (bold == DATE_HOUR)
-    display.setTextColor(WHITE, BLACK);  
+    display.setTextColor(WHITE, BLACK);
   renderZero(d.hour());
   display.print(d.hour());
-  
+
   if (bold != 0)
     display.setTextColor(BLACK);
   display.print(F(":"));
-  
+
   if (bold == DATE_MINUTE)
-    display.setTextColor(WHITE, BLACK);  
+    display.setTextColor(WHITE, BLACK);
   renderZero(d.minute());
   display.print(d.minute());
-  
+
   if (bold != 0)
     display.setTextColor(BLACK);
 }
 
-void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2) 
+void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
 {
   display.clearDisplay();
   display.setTextSize(1);
@@ -479,11 +479,11 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           if (menuUsed) {
             menuUsed = false;
             display.print(F("Ok"));
-            
+
             sensors_event_t event;
             bmp085.getEvent(&event);
-            conf.p0 = event.pressure; 
-            
+            conf.p0 = event.pressure;
+
             //prevent chrono start and beeping
             resetAltitudeSensor();
 
@@ -497,7 +497,7 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           conf.currentAltitude = updateConfItem(conf.currentAltitude, dir, 5);
           //prevent chrono start and beeping
           resetAltitudeSensor();
-          
+
           display.print(conf.currentAltitude);
           display.setTextSize(1);
           display.print(F("m"));
@@ -573,12 +573,12 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
         {
           if (menuUsed_last == false) {
 
-            menuUsed_last = true;   
-            display.setTextSize(1);  
-            
+            menuUsed_last = true;
+            display.setTextSize(1);
+
             DateTime now = rtc.now();
             renderDateTime(now);
-            
+
             date_year = now.year();
             date_month = now.month();
             date_day = now.day();
@@ -609,9 +609,9 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
             }
 
             switch (conf_date_displayed) {
-             
+
               case DATE_DAY:
-                if (dir == MENU_RIGHT) (date_day >= 31) ? date_day = 1 : date_day++;                  
+                if (dir == MENU_RIGHT) (date_day >= 31) ? date_day = 1 : date_day++;
                 if (dir == MENU_LEFT) (date_day == 1) ? date_day = 31 : date_day--;
                 //display.println(F("Jour"));
                 break;
@@ -626,18 +626,18 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
                 //display.println(F("Annee"));
                 break;
               case DATE_HOUR:
-                 if (dir == MENU_RIGHT) (date_hour >= 23) ? date_hour = 0 : date_hour++;
-                 if (dir == MENU_LEFT) (date_hour == 0) ? date_hour = 23 : date_hour--;
+                if (dir == MENU_RIGHT) (date_hour >= 23) ? date_hour = 0 : date_hour++;
+                if (dir == MENU_LEFT) (date_hour == 0) ? date_hour = 23 : date_hour--;
                 //display.println(F("Heure"));
                 break;
               case DATE_MINUTE:
-                 if (dir == MENU_RIGHT) (date_minute >= 59) ? date_minute = 0 : date_minute++;
-                 if (dir == MENU_LEFT)(date_minute == 0) ? date_minute = 59 : date_minute--;
+                if (dir == MENU_RIGHT) (date_minute >= 59) ? date_minute = 0 : date_minute++;
+                if (dir == MENU_LEFT)(date_minute == 0) ? date_minute = 59 : date_minute--;
                 //display.println(F("Minute"));
                 break;
             }
-            
-            display.setTextColor(BLACK); 
+
+            display.setTextColor(BLACK);
             renderDateTime(DateTime(date_year, date_month, date_day, date_hour, date_minute, 0), conf_date_displayed);
             //display.print(date_conf[conf_date_displayed]);
           }
@@ -653,19 +653,19 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           display.clearDisplay();
           display.setTextSize(1);
           display.setTextColor(WHITE, BLACK);
-          
-          if (stat_to_display.chrono == 0){
+
+          if (stat_to_display.chrono == 0) {
             display.print(F("M"));
-            display.print(stat_displayed);  
-            display.print(F(" vide"));          
+            display.print(stat_displayed);
+            display.print(F(" vide"));
           }
           else {
 
-            if (stat_blink_status){
+            if (stat_blink_status) {
 
               renderDateTime(DateTime(stat_to_display.chrono_start));
-              display.println();              
-            } 
+              display.println();
+            }
             else {
 
               display.print(F("Chrono:"));
@@ -680,17 +680,17 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
 
             display.print(F("Alt min:"));
             renderStatItem(stat_to_display.alti_min, F("m"), true);
-  
+
             display.print(F("Tx max:"));
             float m = floor(stat_to_display.txchutemax);
-            m = m + (round(10 * stat_to_display.txchutemax) - (10 * m))/10;
+            m = m + (round(10 * stat_to_display.txchutemax) - (10 * m)) / 10;
             renderStatItem(m, F("m/s"));
-  
+
             display.print(F("Tx Min:"));
             m = floor(stat_to_display.txchutemin);
-            m = m + (round(10 * stat_to_display.txchutemin) - (10 * m))/10;
+            m = m + (round(10 * stat_to_display.txchutemin) - (10 * m)) / 10;
             renderStatItem(m, F("m/s"));
-  
+
             display.print(F("Cumul:"));
             renderStatItem(round(stat_to_display.cumul_alt), F("m"), true);
           }
@@ -735,14 +735,19 @@ void menuSetup()
   	This is the structure of the modelled menu
 
           Vario
+          Stats
+                  Retour
+                  Statistiques
+                  Reset
           Options
                   Retour
                   Tare
                   Altitude
-                  Montée
+                  Montee
                   Descente
                   Light
                   Contra
+                  Date
 
   */
   m_vario.addAfter(m_stats);
@@ -767,10 +772,7 @@ void menuSetup()
 }
 
 /*
-	This is an important function
-	Here all use events are handled
-
-	This is where you define a behaviour for a menu item
+  Here all menu use events are handled
 */
 void menuUseEvent(MenuUseEvent used)
 {
@@ -787,17 +789,15 @@ void menuUseEvent(MenuUseEvent used)
 }
 
 /*
-	This is an important function
-	Here we get a notification whenever the user changes the menu
-	That is, when the menu is navigated
+  That is when the user changes the menu
 */
 void menuChangeEvent(MenuChangeEvent changed)
 {
   renderMenu(changed.to);
 }
 
-int readVccPercent() 
-{  
+int readVccPercent()
+{
   //unsigned int raw_bat = analogRead(A0);
   float real_bat = ((analogRead(A0) * (3.7 / 1024)) * 2);
   average_vcc = average_vcc * 0.94 + real_bat * 0.06;
@@ -805,7 +805,7 @@ int readVccPercent()
 }
 
 void resetAltitudeSensor()
-{  
+{
   // get a new sensor event
   sensors_event_t event;
   bmp085.getEvent(&event);
@@ -838,8 +838,8 @@ void setup()
   pinMode(PIN_LIGHT, OUTPUT);
 
   bmp085.begin();
-  resetAltitudeSensor();  
-  
+  resetAltitudeSensor();
+
   display.begin();
   display.setContrast(conf.contrast_default);
   display.setTextWrap(false);
@@ -868,20 +868,20 @@ void loop()
   Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure, my_temperature) + conf.currentAltitude;
 
   float tempo = millis();
- 
-  float D2 = (tim - tempo);  
+
+  float D2 = (tim - tempo);
   float N1 = D2 * alt;
   float N2 = D2 * (alt + Altitude);
   float D1 = D2 * D2;
-  
+
   alt = Altitude;
-  tim = tempo;  
+  tim = tempo;
   /*
-  2 * (D2 * alt) - D2 * (alt + Altitude)  
+  2 * (D2 * alt) - D2 * (alt + Altitude)
   2 * (D2 * alt) - (D2 * alt + D2 * Altitude)
   (D2 * alt) + (D2 * alt) - D2 * alt + D2 * Altitude
   */
-  
+
   vario = vario * 0.80 + (1000 * (2 * N1 - N2) / D1) * 0.2;
 
   // Update stats if chrono is running
@@ -901,7 +901,7 @@ void loop()
 
   // make some beep...
   if (vario < 15 && vario > -15) {
-    
+
     if (vario > conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0) {
       //when climbing make faster and shorter beeps
       //toneAC(300 + (100 * vario), conf.volume, (vario * 100) + 100, (vario < 1));
@@ -927,10 +927,10 @@ void loop()
     get_time2 = millis();
 
     if (stat.chrono_start != 0 && vario > 0) {
-        stat.cumul_alt += vario;
+      stat.cumul_alt += vario;
     }
 
-    if (menu.getCurrent().getShortkey() == MENU_STAT){
+    if (menu.getCurrent().getShortkey() == MENU_STAT) {
       menu.use();
     }
 
@@ -997,14 +997,14 @@ void loop()
   }
 }
 
-void readButtons() 
+void readButtons()
 {
   long newKnobPosition = knob.read();
   if (newKnobPosition != knobPosition) {
     //Serial.print(newKnobPosition);
     //Serial.print(F(" / "));
     //Serial.println(knobPosition);
-    if (abs(newKnobPosition-knobPosition) >= ENCODER_STEP) {
+    if (abs(newKnobPosition - knobPosition) >= ENCODER_STEP) {
       if (newKnobPosition > knobPosition) { //Right
         if (!menuUsed && varioState == false) {
           if (menu.getCurrent().getShortkey() == MENU_STAT && stat_displayed < NB_STATS) {

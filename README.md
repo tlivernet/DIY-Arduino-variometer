@@ -19,7 +19,7 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 - DC-DC Converter Step Up 1-5V 500mA | 1,15€
 - 3,7V 600mAh LiPo Battery | 3,25€
 - RTC Module for Arduino | 1,55€
-- 3x 10k Ohm resistor + 1x 100k Ohm resistor + 1x 110 Ohm resistor | 0,10€
+- 3x 10k Ohm resistor + 1x 100k Ohm resistor + 1x 120 Ohm resistor | 0,10€
 - Right Angle Mini Slide Switch | 0,10€	
 - Cables | 3€
 - Plastic Electronics Project Box Enclosure DIY 27x60x100mm | 2,40€

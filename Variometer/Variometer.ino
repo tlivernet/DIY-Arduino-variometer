@@ -799,7 +799,7 @@ void menuChangeEvent(MenuChangeEvent changed)
 int readVccPercent()
 {
   //unsigned int raw_bat = analogRead(A0);
-  float real_bat = ((analogRead(A0) * (3.7 / 1024)) * 2);
+  float real_bat = 5 *analogRead(A0) / 1023; 
   average_vcc = average_vcc * 0.94 + real_bat * 0.06;
   return round((average_vcc - 1.5) * 100 / (3.7 - 1.5));
 }
@@ -881,6 +881,7 @@ void loop()
 	= (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
 	= D2 * (alt - Altitude) / (tim - tempo)²
 	= ((tim - tempo) * (alt - Altitude)) / (tim - tempo)²
+
 	= (alt - Altitude) / (tim - tempo)
   */
   

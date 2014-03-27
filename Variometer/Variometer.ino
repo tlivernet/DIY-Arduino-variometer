@@ -25,13 +25,12 @@ uint8_t date_month;
 uint8_t date_day;
 uint8_t date_hour;
 uint8_t date_minute;
-
 /////////////////////////////////////////
 
 //////////////////ENCODER///////////////////////
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #define Enter 12
-#define ENCODER_STEP 2
+#define ENCODER_STEP 4
 
 Encoder knob(2, 3);
 long knobPosition = 0;
@@ -99,14 +98,14 @@ bool initialisation = false;  //If true, reset and update eeprom memory at ardui
 /////////////////////VARIO/////////////////////////
 Adafruit_BMP085_Unified bmp085 = Adafruit_BMP085_Unified(10085); //set up bmp085 sensor
 
-#define ALTI_TRIGGER 2 //Trigger to start and stop chrono in meter
+#define ALTI_TRIGGER 4 //Trigger to start and stop chrono in meter
 float    Altitude;
 int altitude_temp;
 uint8_t chrono_cpt = 0;
 
 float vario = 0;
 bool is_vario_button_push = false;
-float average_vcc = 3;             //variable to hold the value of Vcc from battery
+uint16_t average_vcc = 0;             //variable to hold the value of Vcc from battery
 double average_pressure;
 unsigned long get_time1 = millis();
 unsigned long get_time2 = millis();
@@ -131,7 +130,7 @@ struct Conf
   0.8 , -1.1 , 0, 0, 50, 10, 1040.00, 0
 };
 
-// Statistic structure (176 bits)
+// Statistic structure (176 vccbits)
 #define  NB_STATS 5
 struct Stat
 {
@@ -226,7 +225,6 @@ void renderChrono(Stat value = stat)
   uint8_t m = floor(s / 60);
   s -= m * 60;
 
-  //renderZero(h);
   display.print(h);
   display.print(F(":"));
   renderZero(m);
@@ -268,15 +266,12 @@ void renderVario()
     display.print(F(" C"));
   }
 
-  display.setCursor(62, 9);
-  //uint8_t v = floor(Battery_Vcc);
-  display.print(readVccPercent());
-  display.print(F("%"));
-  //display.print(v);
-  //display.print(F("."));
-  //display.print(round(10 * Battery_Vcc) - (10 * v));
-  //display.print(F("V"));
-
+  uint8_t vcc = readVccPercent();
+  uint8_t bat_x = 72;
+  uint8_t bat_y = 9;
+  display.drawRect(bat_x + 2, bat_y, 10, 6, BLACK);
+  display.fillRect(bat_x, bat_y + 2, 2, 2, BLACK);
+  display.fillRect(bat_x + 3 + (int)(99 - vcc) / 12, bat_y + 1, 8 - (int)(99 - vcc) / 12, 4, BLACK);
 
   display.setTextSize(2);
   display.setCursor(0, 16);
@@ -284,7 +279,7 @@ void renderVario()
   display.setTextColor(WHITE, BLACK);
 
   float vario_abs = abs(vario);
-  display.print((vario < 0) ? F("-") : F("+"));
+  display.print((vario <= -0.05) ? F("-") : (vario >= 0.05) ? F("+") : F(" "));
   uint8_t m = floor(vario_abs);
   display.print(m);
   display.print(F("."));
@@ -438,16 +433,16 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
   display.setTextSize(1);
   display.setTextColor(BLACK);
   display.setCursor(0, 0);
-  //display.println(title);
   display.setTextSize(1);
   display.setTextColor(WHITE, BLACK);
 
-  if (newMenuItem.getShortkey() < 10)
-    display.println(F("Accueil"));
-  else if (newMenuItem.getShortkey() >= 10 && newMenuItem.getShortkey() < 20)
-    display.println(F("Options"));
-  else if (newMenuItem.getShortkey() >= 20 && newMenuItem.getShortkey() < 30)
-    display.println(F("Statistiques"));
+  if (newMenuItem.getShortkey() != MENU_LEFT)
+    if (newMenuItem.getShortkey() < 10)
+      display.println(F("Accueil"));
+    else if (newMenuItem.getShortkey() >= 10 && newMenuItem.getShortkey() < 20)
+      display.println(F("Options"));
+    else if (newMenuItem.getShortkey() >= 20 && newMenuItem.getShortkey() < 30)
+      display.println(F("Statistiques"));
 
   display.setTextSize(2);
   display.println(newMenuItem.getName());
@@ -715,7 +710,6 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
 //this function builds the menu and connects the correct items together
 void menuSetup()
 {
-
   m_vario.name = F("Vario"); //Vario
   m_options.name = F("Options"); //Options
   m_stats.name = F("Stats"); //Stats
@@ -798,10 +792,18 @@ void menuChangeEvent(MenuChangeEvent changed)
 
 int readVccPercent()
 {
-  //unsigned int raw_bat = analogRead(A0);
-  float real_bat = ((analogRead(A0) * (3.7 / 1024)) * 2);
-  average_vcc = average_vcc * 0.94 + real_bat * 0.06;
-  return round((average_vcc - 1.5) * 100 / (3.7 - 1.5));
+  uint16_t real_bat = (int)(4.89 * analogRead(A0));
+  //Serial.println(analogRead(A0));
+  //Serial.println(real_bat);
+  average_vcc = (average_vcc == 0) ? real_bat : (int)(average_vcc * 0.94 + real_bat * 0.06);
+
+  uint8_t percent = round((average_vcc - 3300) * 100 / (3700 - 3300));
+  if (percent >= 100)
+    percent = 99;
+  else if (percent < 1)
+    percent = 1;
+
+  return percent;
 }
 
 void resetAltitudeSensor()
@@ -843,7 +845,7 @@ void setup()
   display.begin();
   display.setContrast(conf.contrast_default);
   display.setTextWrap(false);
-  //display.setRotation(1);
+  //display.setRotation(0);
 
   menuSetup();
   //Serial.println("Starting navigation:\r\nLeft: 4   Right: 6   Use: 5");
@@ -861,10 +863,9 @@ void loop()
 
   // put it in filter and take average
   average_pressure = average_pressure * 0.94 + event.pressure * 0.06;
-
   // set up my_temperature
   bmp085.getTemperature(&my_temperature);
-  
+
   // take new altitude in meters
   Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure, my_temperature) + conf.currentAltitude;
   float tempo = millis();
@@ -875,21 +876,23 @@ void loop()
   //float D1 = D2 * D2;
   /*
         = (2 * N1 - N2) / D1
-	= 2 * (D2 * alt) - D2 * (alt + Altitude) / (tim - tempo)²
-	= 2 * (D2 * alt) - (D2 * alt + D2 * Altitude) / (tim - tempo)²
-	= (D2 * alt) + (D2 * alt) - (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
-	= (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
-	= D2 * (alt - Altitude) / (tim - tempo)²
-	= ((tim - tempo) * (alt - Altitude)) / (tim - tempo)²
-	= (alt - Altitude) / (tim - tempo)
+  = 2 * (D2 * alt) - D2 * (alt + Altitude) / (tim - tempo)²
+  = 2 * (D2 * alt) - (D2 * alt + D2 * Altitude) / (tim - tempo)²
+  = (D2 * alt) + (D2 * alt) - (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
+  = (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
+  = D2 * (alt - Altitude) / (tim - tempo)²
+  = ((tim - tempo) * (alt - Altitude)) / (tim - tempo)²
+
+  = (alt - Altitude) / (tim - tempo)
   */
-  
+
   //vario = vario * 0.80 + (1000 * (2 * N1 - N2) / D1) * 0.2;
   vario = vario * 0.80 + (1000 * 0.2 * ((alt - Altitude) / (tim - tempo)));
+  //vario = (1000 * ((alt - Altitude) / (tim - tempo)));
 
   alt = Altitude;
   tim = tempo;
-  
+
   // Update stats if chrono is running
   if (stat.chrono_start != 0) {
 
@@ -959,13 +962,13 @@ void loop()
       is_vario_button_push = false;
       resetStat();
 
-      display.clearDisplay();
-      display.setTextSize(2);
-      display.setTextColor(WHITE, BLACK);
+      display.setTextSize(1);
+      display.setTextColor(BLACK);
+      display.setCursor(0, 41);
+      display.fillRect(0, 41, 84, 7, WHITE);
       get_time2 = millis();  //stop the refresh rendering vario
-      display.println(F("R.A.Z."));
-      display.println(F("stat"));
-      display.println(F("vol"));
+      display.print(F("R.A.Z. stat M"));
+      display.print(conf.stat_index + 1);
       display.display();
     }
 

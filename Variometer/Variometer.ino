@@ -792,6 +792,7 @@ void menuChangeEvent(MenuChangeEvent changed)
 
 int readVccPercent()
 {
+<<<<<<< HEAD
   uint16_t real_bat = (int)(4.89 * analogRead(A0));
   //Serial.println(analogRead(A0));
   //Serial.println(real_bat);
@@ -804,6 +805,12 @@ int readVccPercent()
     percent = 1;
 
   return percent;
+=======
+  //unsigned int raw_bat = analogRead(A0);
+  float real_bat = 5 *analogRead(A0) / 1023; 
+  average_vcc = average_vcc * 0.94 + real_bat * 0.06;
+  return round((average_vcc - 1.5) * 100 / (3.7 - 1.5));
+>>>>>>> e481c80098c42f6f2c0e72fbd658baa6ce9cdea5
 }
 
 void resetAltitudeSensor()
@@ -876,6 +883,7 @@ void loop()
   //float D1 = D2 * D2;
   /*
         = (2 * N1 - N2) / D1
+<<<<<<< HEAD
   = 2 * (D2 * alt) - D2 * (alt + Altitude) / (tim - tempo)²
   = 2 * (D2 * alt) - (D2 * alt + D2 * Altitude) / (tim - tempo)²
   = (D2 * alt) + (D2 * alt) - (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
@@ -884,6 +892,16 @@ void loop()
   = ((tim - tempo) * (alt - Altitude)) / (tim - tempo)²
 
   = (alt - Altitude) / (tim - tempo)
+=======
+	= 2 * (D2 * alt) - D2 * (alt + Altitude) / (tim - tempo)²
+	= 2 * (D2 * alt) - (D2 * alt + D2 * Altitude) / (tim - tempo)²
+	= (D2 * alt) + (D2 * alt) - (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
+	= (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
+	= D2 * (alt - Altitude) / (tim - tempo)²
+	= ((tim - tempo) * (alt - Altitude)) / (tim - tempo)²
+
+	= (alt - Altitude) / (tim - tempo)
+>>>>>>> e481c80098c42f6f2c0e72fbd658baa6ce9cdea5
   */
 
   //vario = vario * 0.80 + (1000 * (2 * N1 - N2) / D1) * 0.2;

@@ -1,11 +1,13 @@
 DIY Arduino variometer
 ==================
 
-![alt tag](https://github.com/sinseman/DIY-Arduino-variometer/blob/master/Variometer.png?raw=true)
+[Matériel et coût](#materiel-et-cout)
+[Schéma](#schema)
+[Présentation](#presentation)
+[Installation](#installation)
 
 
-Projet de variomètre sur Arduino :
---------------
+## Matériel et coût
 
 Le but de ce projet est de fabriquer un variomètre à faible coût pour une utilisation en vol libre (dans mon cas la pratique du parapente).
 Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay international (prix de janvier 2014) :
@@ -27,8 +29,13 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 **TOTAL	| 26,85 €**
 
 
-Présentation
-==================
+## Schéma
+--------------
+
+![alt tag](https://github.com/sinseman/DIY-Arduino-variometer/blob/master/Variometer.png?raw=true)
+
+
+## Présentation
 
 Ce variomètre utilise un minimum de commande pour naviguer dans le menu et interagir avec l'interface. Nous utilisons un encodeur digital permettant trois actions: Gauche - Droite - Valider.
 
@@ -100,11 +107,8 @@ Voici les informations statistiques disponibles :
 - AltMax
 	- L'altitude maximum en mètre enregistré pendant le vol.
 
-- Tx Max
-	- Le taux de chute maximum en mètre par seconde enregistré pendant le vol.
-
-- Tx Min
-	- Le taux de chute minimum en mètre par seconde enregistré pendant le vol.
+- Tx de chutte
+	- Les taux de chute maximum et minimum en mètre par seconde enregistrés pendant le vol.
 
 - Cumul
 	- Altitude cumulée du vol (en mètre).
@@ -144,3 +148,19 @@ Ajustement du contraste de l'écran.
 **Date**
 
 Réglage de la date et de l'heure de la pendule.
+
+
+## Installation
+
+Lors du premier téléversement du programme sur l'Arduino il est important de passer la variable *initialisation* à *true*.
+Celle-ci permet d'initisaliser correctement la mémoire Eeprom (stockant les statistiques et les options).
+
+```c++
+bool initialisation = true; 
+```
+
+Une fois le premier allumage fait il faut donc re-téléverser le code avec cette fois-ci *initialisation* à *false*. Si cela n’est pas fait la mémoire Eeprom sera effacée à chaque allumage.
+
+```c++
+bool initialisation = false; 
+```

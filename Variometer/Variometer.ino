@@ -130,7 +130,7 @@ struct Conf
   0.8 , -1.1 , 0, 0, 50, 10, 1040.00, 0
 };
 
-// Statistic structure (176 vccbits)
+// Statistic structure (176 bits)
 #define  NB_STATS 5
 struct Stat
 {

@@ -1,10 +1,10 @@
 DIY Arduino variometer
 ==================
 
-[Matériel et coût](#materiel-et-cout)
-[Schéma](#schema)
-[Présentation](#presentation)
-[Installation](#installation)
+- [Matériel et coût](#matériel-et-coût)
+- [Schéma](#schéma)
+- [Présentation](#présentation)
+- [Installation](#installation)
 
 
 ## Matériel et coût
@@ -45,8 +45,7 @@ Le volume est bien entendu paramétrable ainsi que la sensibilité de déclenche
 En plus de fournir des informations en temps réel, un système de détection automatique du début et de fin de vol permet d'obtenir des statistiques intéressantes.
 
 
-Menu :
---------------
+### Menu
 
 - Vario
 - Stats
@@ -63,8 +62,7 @@ Menu :
 	- Contra
 	- Date
 
-Vario :
---------------
+### Vario
 
 Affichage dynamique des éléments suivants :
 
@@ -79,8 +77,7 @@ Le réglage du volume est possible en tournant l'encodeur digital.
 Lors d'un appui long sur le poussoir de l'encodeur, les statistiques sont réinitialisées.
 
 
-Stats :
---------------
+### Stats
 
 L'enregistrement des statistiques de vol se déclenche automatiquement.
 Pour cela le variomètre détecte une prise ou une baisse d'altitude significative entrainant le statu "en vol".
@@ -118,8 +115,7 @@ Voici les informations statistiques disponibles :
 Remise à zéro des statistiques.
 
 
-Options :
---------------
+### Options
 
 **Tare**
 

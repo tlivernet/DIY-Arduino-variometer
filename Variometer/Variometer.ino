@@ -42,7 +42,7 @@ bool menuUsed = false;
 bool menuUsed_last = false;
 bool varioState = false;
 uint8_t stat_displayed = 1;
-bool stat_blink_status = false;
+//bool stat_blink_status = false;
 
 #define MENU_RIGHT 0
 #define MENU_LEFT 1
@@ -245,33 +245,34 @@ void renderVario()
   display.print((int)Altitude);
   display.setTextSize(1);
   display.print(F("m"));
-
+  
   DateTime now = rtc.now();
-  if (now.second() % 2 == 0) {
+    
+  display.setCursor(55, 0);  
+  renderZero(now.hour());
+  display.print(now.hour());
+  display.setCursor(66, 0);
+  display.print(F(":"));
+  display.setCursor(72, 0);
+  renderZero(now.minute());
+  display.print(now.minute());
 
-    display.setCursor(55, 0);
-    renderZero(now.hour());
-    display.print(now.hour());
-    display.setCursor(66, 0);
-    display.print(F(":"));
-    display.setCursor(72, 0);
-    renderZero(now.minute());
-    display.print(now.minute());
+  if (now.second() % 2 == 0) {   
+
+    uint8_t vcc = readVccPercent();
+    uint8_t bat_x = 72;
+    uint8_t bat_y = 9;
+    display.drawRect(bat_x + 2, bat_y, 10, 6, BLACK);
+    display.fillRect(bat_x, bat_y + 2, 2, 2, BLACK);
+    display.fillRect(bat_x + 3 + (int)(99 - vcc) / 12, bat_y + 1, 8 - (int)(99 - vcc) / 12, 4, BLACK);   
   }
   else {
-    display.setCursor(62, 0);
+    display.setCursor(62, 9);
     display.print((int)my_temperature);
-    display.drawCircle(75, 1, 1, BLACK);
-    display.setCursor(72, 0);
+    display.drawCircle(75, 10, 1, BLACK);
+    display.setCursor(72, 9);
     display.print(F(" C"));
   }
-
-  uint8_t vcc = readVccPercent();
-  uint8_t bat_x = 72;
-  uint8_t bat_y = 9;
-  display.drawRect(bat_x + 2, bat_y, 10, 6, BLACK);
-  display.fillRect(bat_x, bat_y + 2, 2, 2, BLACK);
-  display.fillRect(bat_x + 3 + (int)(99 - vcc) / 12, bat_y + 1, 8 - (int)(99 - vcc) / 12, 4, BLACK);
 
   display.setTextSize(2);
   display.setCursor(0, 16);
@@ -368,7 +369,7 @@ void renderStatItem(float value, const __FlashStringHelper *unit, bool integer =
     display.print(round(10 * value_abs) - (10 * m));
   }
   display.setTextSize(1);
-  display.println(unit);
+  display.print(unit);
 }
 
 void renderZero(int value)
@@ -656,38 +657,42 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           }
           else {
 
-            if (stat_blink_status) {
+            //if (stat_blink_status) {
 
               renderDateTime(DateTime(stat_to_display.chrono_start));
               display.println();
-            }
-            else {
-
-              display.print(F("Chrono:"));
-              renderChrono(stat_to_display);
-              display.println();
-            }
-            stat_blink_status = !stat_blink_status;
-
+            //}
+            //else {
+              
             display.setTextColor(BLACK);
+            display.print(F("Chrono:"));
+            renderChrono(stat_to_display);
+            display.println();
+            
+            //}
+            //stat_blink_status = !stat_blink_status;
+
+            
             display.print(F("Alt max:"));
             renderStatItem(stat_to_display.alti_max, F("m"), true);
-
+            display.println();
+            
             display.print(F("Alt min:"));
             renderStatItem(stat_to_display.alti_min, F("m"), true);
-
-            display.print(F("Tx max:"));
+            display.println();
+            
+            display.print(F("m/s:"));
             float m = floor(stat_to_display.txchutemax);
             m = m + (round(10 * stat_to_display.txchutemax) - (10 * m)) / 10;
-            renderStatItem(m, F("m/s"));
-
-            display.print(F("Tx Min:"));
+            renderStatItem(m, F("|"));
             m = floor(stat_to_display.txchutemin);
             m = m + (round(10 * stat_to_display.txchutemin) - (10 * m)) / 10;
-            renderStatItem(m, F("m/s"));
-
+            renderStatItem(m, F(""));
+            display.println();
+            
             display.print(F("Cumul:"));
             renderStatItem(round(stat_to_display.cumul_alt), F("m"), true);
+            display.println();
           }
         }
         break;
@@ -939,10 +944,11 @@ void loop()
       stat.cumul_alt += vario;
     }
 
+    /*
     if (menu.getCurrent().getShortkey() == MENU_STAT) {
       menu.use();
     }
-
+    */
     // proceedings of the dynamic display of vario
     if (varioState == true)
       renderVario();
@@ -1018,7 +1024,7 @@ void readButtons()
         if (!menuUsed && varioState == false) {
           if (menu.getCurrent().getShortkey() == MENU_STAT && stat_displayed < NB_STATS) {
             get_time2 += 1000;
-            stat_blink_status = true;
+            //stat_blink_status = true;
             stat_displayed++;
             renderMenu();
           }
@@ -1034,7 +1040,7 @@ void readButtons()
         if (!menuUsed && varioState == false) {
           if (menu.getCurrent().getShortkey() == MENU_STAT && stat_displayed > 1) {
             get_time2 += 1000;
-            stat_blink_status = true;
+            //stat_blink_status = true;
             stat_displayed--;
             renderMenu();
           }

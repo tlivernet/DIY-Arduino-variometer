@@ -1,9 +1,6 @@
 DIY Arduino variometer
 ==================
 
-YT("KeNAhEgbHnc", print = TRUE)
-
-
 - [Matériel et coût](#matériel-et-coût)
 - [Schéma](#schéma)
 - [Présentation](#présentation)
@@ -33,12 +30,15 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 
 
 ## Schéma
---------------
 
 ![alt tag](https://github.com/sinseman/DIY-Arduino-variometer/blob/master/Variometer.png?raw=true)
 
 
 ## Présentation
+
+### Vidéo
+
+[![Youtube - DIY - Variomètre à base d'Arduino nano](http://img.youtube.com/vi/KeNAhEgbHnc/0.jpg)](http://www.youtube.com/watch?v=KeNAhEgbHnc)
 
 Ce variomètre utilise un minimum de commande pour naviguer dans le menu et interagir avec l'interface. Nous utilisons un encodeur digital permettant trois actions: Gauche - Droite - Valider.
 

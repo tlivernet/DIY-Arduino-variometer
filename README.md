@@ -1,10 +1,15 @@
 DIY Arduino variometer
 ==================
 
+- [Vidéo](#vidéo)
 - [Matériel et coût](#matériel-et-coût)
 - [Schéma](#schéma)
-- [Présentation](#présentation)
 - [Installation](#installation)
+- [Interface](#interface)
+
+## Vidéo
+
+![Youtube - DIY - Variomètre à base d'Arduino nano](http://img.youtube.com/vi/KeNAhEgbHnc/0.jpg)](http://www.youtube.com/watch?v=KeNAhEgbHnc)
 
 
 ## Matériel et coût
@@ -31,14 +36,25 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 
 ## Schéma
 
-![alt tag](https://github.com/sinseman/DIY-Arduino-variometer/blob/master/Variometer.png?raw=true)
+![Schéma](https://github.com/sinseman/DIY-Arduino-variometer/blob/master/Variometer.png?raw=true)
 
 
-## Présentation
+## Installation
 
-### Vidéo
+Lors du premier téléversement du programme sur l'Arduino il est important de passer la variable *initialisation* à *true*.
+Celle-ci permet d'initisaliser correctement la mémoire Eeprom (stockant les statistiques et les options).
 
-[![Youtube - DIY - Variomètre à base d'Arduino nano](http://img.youtube.com/vi/KeNAhEgbHnc/0.jpg)](http://www.youtube.com/watch?v=KeNAhEgbHnc)
+```c++
+bool initialisation = true; 
+```
+
+Une fois le premier allumage fait il faut donc re-téléverser le code avec cette fois-ci *initialisation* à *false*. Si cela n’est pas fait la mémoire Eeprom sera effacée à chaque allumage.
+
+```c++
+bool initialisation = false; 
+```
+
+## Interface
 
 Ce variomètre utilise un minimum de commande pour naviguer dans le menu et interagir avec l'interface. Nous utilisons un encodeur digital permettant trois actions: Gauche - Droite - Valider.
 
@@ -148,18 +164,3 @@ Ajustement du contraste de l'écran.
 
 Réglage de la date et de l'heure de la pendule.
 
-
-## Installation
-
-Lors du premier téléversement du programme sur l'Arduino il est important de passer la variable *initialisation* à *true*.
-Celle-ci permet d'initisaliser correctement la mémoire Eeprom (stockant les statistiques et les options).
-
-```c++
-bool initialisation = true; 
-```
-
-Une fois le premier allumage fait il faut donc re-téléverser le code avec cette fois-ci *initialisation* à *false*. Si cela n’est pas fait la mémoire Eeprom sera effacée à chaque allumage.
-
-```c++
-bool initialisation = false; 
-```

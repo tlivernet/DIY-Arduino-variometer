@@ -109,6 +109,8 @@ uint16_t average_vcc = 0;             //variable to hold the value of Vcc from b
 double average_pressure;
 unsigned long get_time1 = millis();
 unsigned long get_time2 = millis();
+unsigned long get_timeBeep = millis();
+uint8_t beebLatency = 0;
 uint8_t push_write_eeprom = 6;
 float    my_temperature;
 float    alt;
@@ -811,6 +813,18 @@ int readVccPercent()
   return percent;
 }
 
+uint8_t getBeepLatency()
+{  
+   int latency = 240 - (vario * 60);
+   return (latency < 130)? 130: (latency > 240)? 240: latency;
+}
+
+uint16_t getBeepFrequency()
+{  
+   int frequency = 790 + (200 * vario);   
+   return (frequency < 100)? 100: (frequency > 1300)? 1300 :frequency;
+}
+
 void resetAltitudeSensor()
 {
   // get a new sensor event
@@ -865,36 +879,16 @@ void loop()
   // get a new sensor event
   sensors_event_t event;
   bmp085.getEvent(&event);
-
   // put it in filter and take average
   average_pressure = average_pressure * 0.94 + event.pressure * 0.06;
   // set up my_temperature
   bmp085.getTemperature(&my_temperature);
-
   // take new altitude in meters
   Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure, my_temperature) + conf.currentAltitude;
+  
   float tempo = millis();
-
-  //float D2 = (tim - tempo);
-  //float N1 = D2 * alt;
-  //float N2 = D2 * (alt + Altitude);
-  //float D1 = D2 * D2;
-  /*
-        = (2 * N1 - N2) / D1
-  = 2 * (D2 * alt) - D2 * (alt + Altitude) / (tim - tempo)²
-  = 2 * (D2 * alt) - (D2 * alt + D2 * Altitude) / (tim - tempo)²
-  = (D2 * alt) + (D2 * alt) - (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
-  = (D2 * alt) - (D2 * Altitude) / (tim - tempo)²
-  = D2 * (alt - Altitude) / (tim - tempo)²
-  = ((tim - tempo) * (alt - Altitude)) / (tim - tempo)²
-
-  = (alt - Altitude) / (tim - tempo)
-  */
-
-  //vario = vario * 0.80 + (1000 * (2 * N1 - N2) / D1) * 0.2;
-  vario = vario * 0.80 + (1000 * 0.2 * ((alt - Altitude) / (tim - tempo)));
-  //vario = (1000 * ((alt - Altitude) / (tim - tempo)));
-
+  // put it in filter and take average
+  vario = vario * 0.8 + (1000 * 0.2 * ((alt - Altitude) / (tim - tempo)));
   alt = Altitude;
   tim = tempo;
 
@@ -914,17 +908,18 @@ void loop()
   }
 
   // make some beep...
-  if (vario < 15 && vario > -15) {
-
+  if (millis() >= (get_timeBeep + beebLatency))
+  {
+    get_timeBeep = millis();
+    beebLatency = getBeepLatency();
+   
     if (vario > conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0) {
       //when climbing make faster and shorter beeps
-      //toneAC(300 + (100 * vario), conf.volume, (vario * 100) + 100, (vario < 1));
-      toneAC(900 + (100 * vario), conf.volume, 200 - (vario * 10));
+      toneAC(getBeepFrequency(), conf.volume, beebLatency, true);
 
     } else if (vario < conf.vario_sink_rate_start && conf.vario_sink_rate_start != 0) {
 
-      //toneAC(250 + (100 * vario), conf.volume, -(vario * 100) + 100, (vario < 1));
-      toneAC(900 + (100 * vario), conf.volume, 200 - (vario * 10));
+      toneAC(getBeepFrequency(), conf.volume, beebLatency, true);
     }
   }
 

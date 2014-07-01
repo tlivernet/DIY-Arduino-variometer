@@ -97,9 +97,8 @@ bool initialisation = false;  //If true, reset and update eeprom memory at ardui
 
 /////////////////////VARIO/////////////////////////
 Adafruit_BMP085_Unified bmp085 = Adafruit_BMP085_Unified(10085); //set up bmp085 sensor
-
 #define ALTI_TRIGGER 4 //Trigger to start and stop chrono in meter
-float    Altitude;
+float Altitude;
 int altitude_temp;
 uint8_t chrono_cpt = 0;
 
@@ -201,8 +200,8 @@ void resetAllStats()
 
 void playConfirmMelody()
 {
-  toneAC(700, 8, 150);
-  toneAC(500, 8, 150);
+  toneAC(700, conf.volume, 150);
+  toneAC(500, conf.volume, 150);
 }
 
 void initEeprom()
@@ -975,8 +974,9 @@ void loop()
 
 
     // if the altitude out of his "zone", the timer is started
-    if (stat.chrono_start == 0) {
+    //if (stat.chrono_start == 0) {
       if (Altitude > altitude_temp + ALTI_TRIGGER || Altitude < altitude_temp - ALTI_TRIGGER) {
+        resetStat();
         DateTime now = rtc.now();
         stat.chrono_start = now.unixtime();
       }
@@ -987,8 +987,8 @@ void loop()
           altitude_temp = Altitude;
         }
       }
-    }
-    else if (stat.chrono_start != 0 && stat.chrono == 0) {
+    //}
+    if (stat.chrono_start != 0 && stat.chrono == 0) {
       // if left in the same altitude "zone" 15 seconds, the timer is stopped
       if (altitude_temp - ALTI_TRIGGER / 2 < Altitude && altitude_temp + ALTI_TRIGGER / 2 > Altitude) {
         chrono_cpt++;

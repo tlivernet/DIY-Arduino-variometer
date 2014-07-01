@@ -41,16 +41,18 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 
 ## Installation
 
+**Il faut utiliser [au minimum la version 1.5 de l'IDE Arduino](http://arduino.cc/en/main/software#toc3), sinon des erreurs de compilation apparaissent !**
+
 Lors du premier téléversement du programme sur l'Arduino il est important de passer la variable *initialisation* à *true*.
 Celle-ci permet d'initisaliser correctement la mémoire Eeprom (stockant les statistiques et les options).
 
-```c++
+```
 bool initialisation = true; 
 ```
 
 Une fois le premier allumage fait il faut donc re-téléverser le code avec cette fois-ci *initialisation* à *false*. Si cela n’est pas fait la mémoire Eeprom sera effacée à chaque allumage.
 
-```c++
+```
 bool initialisation = false; 
 ```
 

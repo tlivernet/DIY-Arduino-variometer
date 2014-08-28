@@ -803,7 +803,7 @@ int readVccPercent()
   //Serial.println(real_bat);
   average_vcc = (average_vcc == 0) ? real_bat : (int)(average_vcc * 0.94 + real_bat * 0.06);
 
-  uint8_t percent = round((average_vcc - 3300) * 100 / (3700 - 3300));
+  uint8_t percent = map(average_vcc,3100,4100,0,100);
   if (percent >= 100)
     percent = 99;
   else if (percent < 1)

@@ -922,11 +922,21 @@ void loop()
     }
   }
 
-  //every 67 milliseconds, update vario bar
-  if (millis() >= (get_time1 + 67) && varioState == true)
+  //every 67 milliseconds,
+  if (millis() >= (get_time1 + 67))
   {
     get_time1 = millis();
-    renderVarioBar();
+    /*
+    if (stat.chrono_start != 0 && stat.chrono == 0) {
+       if (altitude_temp - ALTI_TRIGGER / 2 > Altitude || altitude_temp + ALTI_TRIGGER / 2 < Altitude) {
+          chrono_cpt = 0;
+          altitude_temp = Altitude;
+       }
+    }*/
+    
+    // update vario bar
+    if (varioState == true)
+      renderVarioBar();
   }
 
   //every second

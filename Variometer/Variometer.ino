@@ -299,7 +299,7 @@ void renderVario()
   display.print(conf.stat_index + 1);
   display.print(F(" "));
   renderChrono();
-
+  
   display.display();
 }
 
@@ -926,13 +926,6 @@ void loop()
   if (millis() >= (get_time1 + 67))
   {
     get_time1 = millis();
-    /*
-    if (stat.chrono_start != 0 && stat.chrono == 0) {
-       if (altitude_temp - ALTI_TRIGGER / 2 > Altitude || altitude_temp + ALTI_TRIGGER / 2 < Altitude) {
-          chrono_cpt = 0;
-          altitude_temp = Altitude;
-       }
-    }*/
     
     // update vario bar
     if (varioState == true)
@@ -984,7 +977,7 @@ void loop()
 
 
     // if the altitude out of his "zone", the timer is started
-    //if (stat.chrono_start == 0) {
+    if (stat.chrono_start == 0) {
       if (Altitude > altitude_temp + ALTI_TRIGGER || Altitude < altitude_temp - ALTI_TRIGGER) {
         resetStat();
         DateTime now = rtc.now();
@@ -997,10 +990,10 @@ void loop()
           altitude_temp = Altitude;
         }
       }
-    //}
+    }
     if (stat.chrono_start != 0 && stat.chrono == 0) {
-      // if left in the same altitude "zone" 15 seconds, the timer is stopped
-      if (altitude_temp - ALTI_TRIGGER / 2 < Altitude && altitude_temp + ALTI_TRIGGER / 2 > Altitude) {
+      // if altitude left in the same "zone" (2 meters) during 15 seconds, the timer is stopped
+      if (altitude_temp - 1 < Altitude && altitude_temp + 1 > Altitude) {
         chrono_cpt++;
         if (chrono_cpt >= 15) {
           DateTime now = rtc.now();

@@ -101,12 +101,12 @@ Lors d'un appui long sur le poussoir de l'encodeur, les statistiques sont réini
 ### Stats
 
 L'enregistrement des statistiques de vol se déclenche automatiquement.
-Pour cela le variomètre détecte une prise ou une baisse d'altitude significative entrainant le statu "en vol".
-Lorsqu'il n'y a pas de baisse ou de prise d'altitude significative depuis un certain temps, le statu "en vol" s'arrête.
+Pour cela le variomètre détecte une prise ou une baisse d'altitude significative entrainant le statut "en vol".
+Lorsqu'il n'y a pas de baisse ou de prise d'altitude significative depuis un certain temps, le statut "en vol" s'arrête.
 
 A la fin du vol les statistiques sont enregistrés en dur donc ne sont pas perdus à l'extinction du variomètre.
 
-Ce programme peut enregistrer 5 rapports de vol. Une fois un vol terminé, la piste suivante d'enregistrement est sélectionnée.
+Ce programme peut enregistrer 5 rapports de vol. Une fois un vol terminé, la piste suivante d'enregistrement est sélectionnée. Si celle-ci n'est pas vide elle n'est pas écrasée. Il faut alors manuellement effacer la plage de stat en cours ou reset toutes les plages.
 
 
 **Statistique**

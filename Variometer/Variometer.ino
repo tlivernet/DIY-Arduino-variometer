@@ -11,6 +11,10 @@
 #include <RTClib.h>
 #include <Arduino.h>
 
+/////////////////////////////////////////
+bool initialisation = false;  //If true, reset and update eeprom memory at arduino start
+/////////////////////////////////////////
+
 //////////////////RTC///////////////////////
 RTC_DS1307 rtc;
 #define DATE_DAY 1
@@ -89,10 +93,6 @@ MenuItem m_recreset = MenuItem(NULL, MENU_RECRESET); //Reset records
 #define PIN_SDIN  4
 
 Adafruit_PCD8544 display = Adafruit_PCD8544(PIN_SCLK, PIN_SDIN, PIN_DC, PIN_SCE, PIN_RESET);
-/////////////////////////////////////////
-
-/////////////////////////////////////////
-bool initialisation = false;  //If true, reset and update eeprom memory at arduino start
 /////////////////////////////////////////
 
 /////////////////////VARIO/////////////////////////
@@ -308,9 +308,9 @@ void renderVarioBar()
   float vario_abs = abs(vario);
   display.fillRect(0, 32, 84, 9, WHITE);
   if (vario >= 0)
-    display.fillRect(42, 32, round(vario_abs * 15), 8, BLACK);
+    display.fillRect(42, 32, round(vario_abs * 10), 8, BLACK);
   else
-    display.drawRect(42, 32, -round(vario_abs * 15), 8, BLACK);
+    display.drawRect(42, 32, -round(vario_abs * 10), 8, BLACK);
 
   display.display();
 }
@@ -820,7 +820,7 @@ uint8_t getBeepLatency()
 
 uint16_t getBeepFrequency()
 {  
-   int frequency = 790 + (200 * vario);   
+   int frequency = 790 + (100 * vario);   
    return (frequency < 100)? 100: (frequency > 1300)? 1300 :frequency;
 }
 
@@ -922,8 +922,8 @@ void loop()
     }
   }
 
-  //every 67 milliseconds,
-  if (millis() >= (get_time1 + 67))
+  //every 100 milliseconds,
+  if (millis() >= (get_time1 + 100))
   {
     get_time1 = millis();
     

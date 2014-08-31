@@ -24,7 +24,13 @@
 #endif
 
 #include <Adafruit_Sensor.h>
-#include <Wire.h>
+
+#ifdef __AVR_ATtiny85__
+ #include "TinyWireM.h"
+ #define Wire TinyWireM
+#else
+ #include <Wire.h>
+#endif
 
 /*=========================================================================
     I2C ADDRESS/BITS
@@ -99,11 +105,13 @@ class Adafruit_BMP085_Unified : public Adafruit_Sensor
     void  getTemperature(float *temp);
     void  getPressure(float *pressure);
     float pressureToAltitude(float seaLevel, float atmospheric, float temp);
+    float seaLevelForAltitude(float altitude, float atmospheric, float temp);
     void  getEvent(sensors_event_t*);
     void  getSensor(sensor_t*);
 
   private:
-    int32_t           _sensorID;
+    int32_t computeB5(int32_t ut);
+    int32_t _sensorID;
 };
 
 #endif

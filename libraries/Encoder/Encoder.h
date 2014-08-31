@@ -2,6 +2,7 @@
  * http://www.pjrc.com/teensy/td_libs_Encoder.html
  * Copyright (c) 2011,2013 PJRC.COM, LLC - Paul Stoffregen <paul@pjrc.com>
  *
+ * Version 1.2 - fix -2 bug in C-only code
  * Version 1.1 - expand to support boards with up to 60 interrupts
  * Version 1.0 - initial release
  * 
@@ -284,7 +285,7 @@ private:
 				arg->position += 2;
 				return;
 			case 6: case 9:
-				arg->position += 2;
+				arg->position -= 2;
 				return;
 		}
 #endif

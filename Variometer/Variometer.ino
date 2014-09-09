@@ -333,6 +333,7 @@ void renderVolume(uint8_t dir = MENU_RIGHT)
   display.println(F("Volume:"));
   (conf.volume == 0) ? display.print(F("Off")) : display.print(conf.volume);
   display.display();
+  playConfirmMelody();
 }
 
 float updateConfItem(float var, uint8_t dir = 2, float increment = 1)

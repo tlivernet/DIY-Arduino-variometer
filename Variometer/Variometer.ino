@@ -10,7 +10,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
 #include <RTClib.h>
-#include <Arduino.h>
 
 /////////////////////////////////////////
 bool initialisation = false;  //If true, reset and update eeprom memory at arduino start
@@ -37,7 +36,7 @@ uint8_t date_minute;
 #define Enter 12
 #define ENCODER_STEP 4
 
-Encoder knob(2, 3);
+Encoder knob(3, 2);
 long knobPosition = 0;
 int lastEnterState = HIGH;
 /////////////////////////////////////////
@@ -86,12 +85,12 @@ MenuItem m_recreset = MenuItem(NULL, MENU_RECRESET); //Reset records
 
 //////////////////ECRAN///////////////////////
 #define enablePartialUpdate
-#define PIN_SCLK  8
+#define PIN_SCLK  4
 #define PIN_LIGHT  11
 #define PIN_SCE   7
-#define PIN_RESET 6
-#define PIN_DC    5
-#define PIN_SDIN  4
+#define PIN_RESET 8
+#define PIN_DC    6
+#define PIN_SDIN  5
 
 Adafruit_PCD8544 display = Adafruit_PCD8544(PIN_SCLK, PIN_SDIN, PIN_DC, PIN_SCE, PIN_RESET);
 /////////////////////////////////////////
@@ -104,13 +103,20 @@ int altitude_temp;
 uint8_t chrono_cpt = 0;
 
 float vario = 0;
+float vario_old = 0;
+float vario_diff = 0;
+uint8_t vario_diff_cpt = 0;
+uint8_t timeNoPauseBeep = 0;
+bool noSound = false;
+unsigned long get_timeBeep = millis();
+uint8_t beepLatency = 0;
+
 bool is_vario_button_push = false;
 uint16_t average_vcc = 0;             //variable to hold the value of Vcc from battery
 double average_pressure;
 unsigned long get_time1 = millis();
 unsigned long get_time2 = millis();
-unsigned long get_timeBeep = millis();
-uint8_t beebLatency = 0;
+
 uint8_t push_write_eeprom = 6;
 float    my_temperature;
 float    alt;
@@ -814,15 +820,15 @@ int readVccPercent()
   return percent;
 }
 
-uint8_t getBeepLatency()
-{  
-   int latency = 240 - (vario * 60);
-   return (latency < 130)? 130: (latency > 240)? 240: latency;
+uint8_t getBeepLatency(float variation)
+{
+   int latency = 150 - (variation * 30);
+   return (latency < 70)? 70: (latency > 150)? 150: latency;
 }
 
-uint16_t getBeepFrequency()
-{  
-   int frequency = 790 + (100 * vario);   
+uint16_t getBeepFrequency(float variation)
+{
+   int frequency = 690 + (150 * variation);   
    return (frequency < 100)? 100: (frequency > 1300)? 1300 :frequency;
 }
 
@@ -876,7 +882,7 @@ void loop()
   readButtons();
   // screen brightness. AnalogWrite values from 0 to 255
   analogWrite(PIN_LIGHT, conf.light_cpt * 51);
-
+  //Serial.println(millis());
   // get a new sensor event
   sensors_event_t event;
   bmp085.getEvent(&event);
@@ -890,6 +896,13 @@ void loop()
   float tempo = millis();
   // put it in filter and take average
   vario = vario * 0.8 + (1000 * 0.2 * ((alt - Altitude) / (tim - tempo)));
+  
+  /* TEST BLOC
+  vario = vario + 0.01;
+  if (vario > 4)
+    vario = 0;
+  */
+  
   alt = Altitude;
   tim = tempo;
 
@@ -908,19 +921,35 @@ void loop()
       stat.txchutemin = vario;
   }
 
-  // make some beep...
-  if (millis() >= (get_timeBeep + beebLatency))
-  {
+  // make some beep...    
+  if (millis() >= (get_timeBeep + beepLatency) || timeNoPauseBeep <= 30)
+  {       
     get_timeBeep = millis();
-    beebLatency = getBeepLatency();
-   
-    if (vario > conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0) {
-      //when climbing make faster and shorter beeps
-      toneAC(getBeepFrequency(), conf.volume, beebLatency, true);
-
-    } else if (vario < conf.vario_sink_rate_start && conf.vario_sink_rate_start != 0) {
-
-      toneAC(getBeepFrequency(), conf.volume, beebLatency, true);
+    
+    noSound = (timeNoPauseBeep <= 30)? false: !noSound;
+    
+    if (false == noSound){
+      //beep even if vario has negative value but vario is climbing
+      float variation = (vario < conf.vario_climb_rate_start && vario_diff >= conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0)? vario_diff: vario;
+            
+      if (timeNoPauseBeep <= 30){ 
+        timeNoPauseBeep++;
+        beepLatency = 150;        
+      }
+      else {
+        beepLatency = getBeepLatency(variation);
+      }
+     
+      if ((vario > conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0) || (vario < conf.vario_sink_rate_start && conf.vario_sink_rate_start != 0)) {
+        //when climbing make faster and shorter beeps
+        toneAC(getBeepFrequency(variation), conf.volume, beepLatency, true);
+      }
+      else {
+        toneAC(0);
+        timeNoPauseBeep = 0;
+      }
+    } else {
+      beepLatency = beepLatency / 2;
     }
   }
 
@@ -932,13 +961,20 @@ void loop()
     // update vario bar
     if (varioState == true)
       renderVarioBar();
+      
+    vario_diff_cpt++;
+    if (vario_diff_cpt == 5){
+        vario_diff_cpt = 0;
+        vario_diff = vario - vario_old;
+        vario_old = vario;   
+    }  
   }
 
   //every second
   if (millis() >= (get_time2 + 1000))
   {
     get_time2 = millis();
-
+    
     if (stat.chrono_start != 0 && vario > 0) {
       stat.cumul_alt += vario;
     }
@@ -1009,6 +1045,9 @@ void loop()
         altitude_temp = Altitude;
       }
     }
+    //correct beep latency    
+    beepLatency = 0;
+    noSound = true;
   }
 }
 

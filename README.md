@@ -1,3 +1,15 @@
+# MISE À JOUR #
+
+**Attention !** Lors de la dernière mise à jour le schéma de connection de l'écran a été modifié pour des soucis d'optimisations du montage.
+
+- **PIN\_SCLK** : D8 --> D4
+- **PIN\_LIGHT** : D11 --> Inchangée
+- **PIN\_SCE** : D7 --> Inchangée
+- **PIN\_RESET** : D8 --> D6
+- **PIN\_DC** : D6 --> D5
+- **PIN\_SDIN** :  D5 --> D4
+
+
 DIY Arduino variometer
 ==================
 
@@ -26,7 +38,7 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 - DC-DC Converter Step Up 1-5V 500mA | 1,15€
 - 3,7V 600mAh LiPo Battery | 3,25€
 - RTC Module for Arduino | 1,55€
-- 3x 10k Ohm resistor + 1x 100k Ohm resistor + 1x 120 Ohm resistor | 0,10€
+- 3x 10k Ohm resistor + 1x 120 Ohm resistor | 0,10€
 - Right Angle Mini Slide Switch | 0,10€	
 - Cables | 3€
 - Plastic Electronics Project Box Enclosure DIY 27x60x100mm | 2,40€

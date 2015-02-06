@@ -105,7 +105,6 @@ uint8_t chrono_cpt = 0;
 float vario = 0;
 float vario_old = 0;
 float vario_diff = 0;
-uint8_t vario_diff_cpt = 0;
 uint8_t timeNoPauseBeep = 0;
 bool noSound = false;
 unsigned long get_timeBeep = millis();
@@ -113,7 +112,7 @@ uint8_t beepLatency = 0;
 
 bool is_vario_button_push = false;
 uint16_t average_vcc = 0;             //variable to hold the value of Vcc from battery
-double average_pressure;
+float average_pressure;
 unsigned long get_time1 = millis();
 unsigned long get_time2 = millis();
 
@@ -123,7 +122,7 @@ float    alt;
 float    tim;
 
 #define memoryBase 32
-// Configuration structure (144 bits)
+// Configuration structure (137 bits)
 struct Conf
 {
   float vario_climb_rate_start;    //minimum climb beeping value(ex. start climbing beeping at 0.4m/s)
@@ -131,11 +130,11 @@ struct Conf
   int currentAltitude;
   uint8_t light_cpt;
   uint8_t contrast_default;
-  uint8_t volume;
+  bool volume;
   float p0;
   uint8_t stat_index;
 } conf = {
-  0.8 , -1.1 , 0, 0, 50, 10, 1040.00, 0
+  0.8 , -1.1 , 0, 0, 50, true, 1040.00, 0
 };
 
 // Statistic structure (176 bits)
@@ -207,8 +206,10 @@ void resetAllStats()
 
 void playConfirmMelody()
 {
-  toneAC(700, conf.volume, 150);
-  toneAC(500, conf.volume, 150);
+  if (true == conf.volume){
+    toneAC(700, 10, 150);
+    toneAC(500, 10, 150);
+  }
 }
 
 void initEeprom()
@@ -244,82 +245,87 @@ void renderChrono(Stat value = stat)
 
 void renderVario()
 {
-  display.fillRect(0, 0, 84, 32, WHITE);
-  // text display tests
-  display.setCursor(0, 0);
-
-  display.setTextColor(BLACK);
-  display.setTextSize(2);
-  display.print((int)Altitude);
-  display.setTextSize(1);
-  display.print(F("m"));
-  
-  DateTime now = rtc.now();
+  if (varioState == true){
     
-  display.setCursor(55, 0);  
-  renderZero(now.hour());
-  display.print(now.hour());
-  display.setCursor(66, 0);
-  display.print(F(":"));
-  display.setCursor(72, 0);
-  renderZero(now.minute());
-  display.print(now.minute());
-
-  if (now.second() % 2 == 0) {   
-
-    uint8_t vcc = readVccPercent();
-    uint8_t bat_x = 72;
-    uint8_t bat_y = 9;
-    display.drawRect(bat_x + 2, bat_y, 10, 6, BLACK);
-    display.fillRect(bat_x, bat_y + 2, 2, 2, BLACK);
-    display.fillRect(bat_x + 3 + (int)(99 - vcc) / 12, bat_y + 1, 8 - (int)(99 - vcc) / 12, 4, BLACK);   
-  }
-  else {
-    display.setCursor(62, 9);
-    display.print((int)my_temperature);
-    display.drawCircle(75, 10, 1, BLACK);
-    display.setCursor(72, 9);
-    display.print(F(" C"));
-  }
-
-  display.setTextSize(2);
-  display.setCursor(0, 16);
-
-  display.setTextColor(WHITE, BLACK);
-
-  float vario_abs = abs(vario);
-  display.print((vario <= -0.05) ? F("-") : (vario >= 0.05) ? F("+") : F(" "));
-  uint8_t m = floor(vario_abs);
-  display.print(m);
-  display.print(F("."));
-  display.print(round(10 * vario_abs) - (10 * m));
-  display.setTextSize(1);
-  display.setCursor(48, 24);
-  display.print(F("m/s"));
-
-  display.setTextSize(1);
-  display.setTextColor(BLACK);
-  display.setCursor(0, 41);
-  display.fillRect(0, 41, 84, 7, WHITE);
-
-  display.print(F("M"));
-  display.print(conf.stat_index + 1);
-  display.print(F(" "));
-  renderChrono();
+    display.fillRect(0, 0, 84, 32, WHITE);
+    // text display tests
+    display.setCursor(0, 0);
   
-  display.display();
+    display.setTextColor(BLACK);
+    display.setTextSize(2);
+    display.print((int)Altitude);
+    display.setTextSize(1);
+    display.print(F("m"));
+    
+    DateTime now = rtc.now();
+      
+    display.setCursor(55, 0);  
+    renderZero(now.hour());
+    display.print(now.hour());
+    display.setCursor(66, 0);
+    display.print(F(":"));
+    display.setCursor(72, 0);
+    renderZero(now.minute());
+    display.print(now.minute());
+  
+    if (now.second() % 2 == 0) {   
+  
+      uint8_t vcc = readVccPercent();
+      uint8_t bat_x = 72;
+      uint8_t bat_y = 9;
+      display.drawRect(bat_x + 2, bat_y, 10, 6, BLACK);
+      display.fillRect(bat_x, bat_y + 2, 2, 2, BLACK);
+      display.fillRect(bat_x + 3 + (int)(99 - vcc) / 12, bat_y + 1, 8 - (int)(99 - vcc) / 12, 4, BLACK);   
+    }
+    else {
+      display.setCursor(62, 9);
+      display.print((int)my_temperature);
+      display.drawCircle(75, 10, 1, BLACK);
+      display.setCursor(72, 9);
+      display.print(F(" C"));
+    }
+  
+    display.setTextSize(2);
+    display.setCursor(0, 16);
+  
+    display.setTextColor(WHITE, BLACK);
+  
+    float vario_abs = abs(vario);
+    display.print((vario <= -0.05) ? F("-") : (vario >= 0.05) ? F("+") : F(" "));
+    uint8_t m = floor(vario_abs);
+    display.print(m);
+    display.print(F("."));
+    display.print(round(10 * vario_abs) - (10 * m));
+    display.setTextSize(1);
+    display.setCursor(48, 24);
+    display.print(F("m/s"));
+  
+    display.setTextSize(1);
+    display.setTextColor(BLACK);
+    display.setCursor(0, 41);
+    display.fillRect(0, 41, 84, 7, WHITE);
+  
+    display.print(F("M"));
+    display.print(conf.stat_index + 1);
+    display.print(F(" "));
+    renderChrono();
+    
+    display.display();
+  }
 }
 
 void renderVarioBar()
 {
-  float vario_abs = abs(vario);
-  display.fillRect(0, 32, 84, 9, WHITE);
-  if (vario >= 0)
-    display.fillRect(42, 32, round(vario_abs * 10), 8, BLACK);
-  else
-    display.drawRect(42, 32, -round(vario_abs * 10), 8, BLACK);
-
-  display.display();
+  if (varioState == true){
+    
+    display.fillRect(0, 32, 84, 9, WHITE);
+    if (vario >= 0)
+      display.fillRect(42, 32, round(abs(vario) * 10), 8, BLACK);
+    else
+      display.drawRect(42, 32, -round(abs(vario) * 10), 8, BLACK);
+  
+    display.display();
+  }
 }
 
 void renderVolume(uint8_t dir = MENU_RIGHT)
@@ -329,17 +335,17 @@ void renderVolume(uint8_t dir = MENU_RIGHT)
   display.setTextColor(WHITE, BLACK);
 
   if  (dir == MENU_RIGHT)
-    (conf.volume == 10) ? conf.volume = 10 : conf.volume += 2;
+    conf.volume = true;
   else if (dir == MENU_LEFT)
-    (conf.volume == 0) ? conf.volume = 0 : conf.volume -= 2;
+    conf.volume = false;
 
   push_write_eeprom = 0;
   get_time2 = millis();  //stop the refresh rendering vario
 
-  display.println(F("Volume:"));
-  (conf.volume == 0) ? display.print(F("Off")) : display.print(conf.volume);
+  display.println(F("Sons:"));
+  (false == conf.volume) ? display.print(F("Off")) : display.print(F("On"));
   display.display();
-  playConfirmMelody();
+  //playConfirmMelody();
 }
 
 float updateConfItem(float var, uint8_t dir = 2, float increment = 1)
@@ -543,8 +549,8 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
 
       case MENU_LIGHT:
         {
-          conf.light_cpt = updateConfItem(conf.light_cpt, dir, -1);
-
+          conf.light_cpt = updateConfItem(conf.light_cpt, dir, -1);          
+          
           if  (conf.light_cpt <= 0)
             conf.light_cpt = 0;
 
@@ -555,6 +561,7 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           else {
             display.print(5 - conf.light_cpt);
           }
+          updateBrightness();
         }
         break;
 
@@ -804,6 +811,14 @@ void menuChangeEvent(MenuChangeEvent changed)
   renderMenu(changed.to);
 }
 
+/*
+  screen brightness. AnalogWrite values from 0 to 255
+*/
+void updateBrightness()
+{  
+  analogWrite(PIN_LIGHT, conf.light_cpt * 51);
+}
+
 int readVccPercent()
 {
   uint16_t real_bat = (int)(4.89 * analogRead(A0));
@@ -845,6 +860,43 @@ void resetAltitudeSensor()
   tim = millis();
 }
 
+/*
+  make some beeps...   
+*/
+void makeBeeps()
+{   
+  if (true == conf.volume && (millis() >= (get_timeBeep + beepLatency) || timeNoPauseBeep <= 30))
+  {       
+    get_timeBeep = millis();
+    
+    noSound = (timeNoPauseBeep <= 30)? false: !noSound;
+    
+    if (false == noSound){
+      //beep even if vario has negative value but vario is climbing
+      float variation = (vario < conf.vario_climb_rate_start && vario_diff >= conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0)? vario_diff: vario;
+            
+      if (timeNoPauseBeep <= 30){ 
+        timeNoPauseBeep++;
+        beepLatency = 150;        
+      }
+      else {
+        beepLatency = getBeepLatency(variation);
+      }
+     
+      if ((vario > conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0) || (vario < conf.vario_sink_rate_start && conf.vario_sink_rate_start != 0)) {
+        //when climbing make faster and shorter beeps
+        toneAC(getBeepFrequency(variation), 10, beepLatency, true);
+      }
+      else {
+        toneAC(0);
+        timeNoPauseBeep = 0;
+      }
+    } else {
+      beepLatency = beepLatency / 2;
+    }
+  }
+}
+
 void setup()
 {
   //Serial.begin(9600);
@@ -873,16 +925,13 @@ void setup()
   display.setTextWrap(false);
   //display.setRotation(0);
 
-  menuSetup();
-  //Serial.println("Starting navigation:\r\nLeft: 4   Right: 6   Use: 5");
+  menuSetup();  
+  updateBrightness();
 }
 
 void loop()
 {
-  readButtons();
-  // screen brightness. AnalogWrite values from 0 to 255
-  analogWrite(PIN_LIGHT, conf.light_cpt * 51);
-  //Serial.println(millis());
+  readButtons();  
   // get a new sensor event
   sensors_event_t event;
   bmp085.getEvent(&event);
@@ -892,23 +941,25 @@ void loop()
   bmp085.getTemperature(&my_temperature);
   // take new altitude in meters
   Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure, my_temperature) + conf.currentAltitude;
-  
-  float tempo = millis();
+
+  float tempo = micros();
   // put it in filter and take average
-  vario = vario * 0.8 + (1000 * 0.2 * ((alt - Altitude) / (tim - tempo)));
+  //vario = 1000000 * ((alt - Altitude) / (tim - tempo)));
+  vario = vario * 0.8 + (200000 * ((alt - Altitude) / (tim - tempo)));
   
-  /* TEST BLOC
+  /* TEST BLOC */  
+  /*
   vario = vario + 0.01;
   if (vario > 4)
     vario = 0;
-  */
+ */ 
   
-  alt = Altitude;
-  tim = tempo;
-
   // Update stats if chrono is running
   if (stat.chrono_start != 0) {
-
+    
+    if (vario > 0)
+      stat.cumul_alt += vario * (1000 /(tempo - tim));    
+    
     if (Altitude > stat.alti_max)
       stat.alti_max = Altitude;
     if (Altitude < stat.alti_min)
@@ -916,77 +967,35 @@ void loop()
 
     if (vario < stat.txchutemax)
       stat.txchutemax = vario;
-
     if (vario > stat.txchutemin)
       stat.txchutemin = vario;
   }
-
-  // make some beep...    
-  if (millis() >= (get_timeBeep + beepLatency) || timeNoPauseBeep <= 30)
-  {       
-    get_timeBeep = millis();
-    
-    noSound = (timeNoPauseBeep <= 30)? false: !noSound;
-    
-    if (false == noSound){
-      //beep even if vario has negative value but vario is climbing
-      float variation = (vario < conf.vario_climb_rate_start && vario_diff >= conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0)? vario_diff: vario;
-            
-      if (timeNoPauseBeep <= 30){ 
-        timeNoPauseBeep++;
-        beepLatency = 150;        
-      }
-      else {
-        beepLatency = getBeepLatency(variation);
-      }
-     
-      if ((vario > conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0) || (vario < conf.vario_sink_rate_start && conf.vario_sink_rate_start != 0)) {
-        //when climbing make faster and shorter beeps
-        toneAC(getBeepFrequency(variation), conf.volume, beepLatency, true);
-      }
-      else {
-        toneAC(0);
-        timeNoPauseBeep = 0;
-      }
-    } else {
-      beepLatency = beepLatency / 2;
-    }
-  }
-
-  //every 100 milliseconds,
-  if (millis() >= (get_time1 + 100))
+  
+  alt = Altitude;
+  tim = tempo;
+  
+  // make some beeps...
+  makeBeeps();
+  
+  //every 200 milliseconds,
+  if (millis() >= (get_time1 + 200))
   {
-    get_time1 = millis();
-    
+    get_time1 = millis();    
     // update vario bar
-    if (varioState == true)
-      renderVarioBar();
-      
-    vario_diff_cpt++;
-    if (vario_diff_cpt == 5){
-        vario_diff_cpt = 0;
-        vario_diff = vario - vario_old;
-        vario_old = vario;   
-    }  
+    renderVarioBar();
   }
 
   //every second
   if (millis() >= (get_time2 + 1000))
   {
     get_time2 = millis();
-    
-    if (stat.chrono_start != 0 && vario > 0) {
-      stat.cumul_alt += vario;
-    }
 
-    /*
-    if (menu.getCurrent().getShortkey() == MENU_STAT) {
-      menu.use();
-    }
-    */
     // proceedings of the dynamic display of vario
-    if (varioState == true)
-      renderVario();
+    renderVario();
+
+    // diff with previous variometer measurement
+    vario_diff = vario - vario_old;
+    vario_old = vario;   
 
     // eeprom saves after 5 seconds
     if (push_write_eeprom == 5) {
@@ -995,7 +1004,6 @@ void loop()
     }
     else if (push_write_eeprom < 5)
       push_write_eeprom++;
-
 
     // in vario, if button enter is pressed 1 seconds, reset stats
     if (is_vario_button_push == true) {
@@ -1045,9 +1053,8 @@ void loop()
         altitude_temp = Altitude;
       }
     }
-    //correct beep latency    
-    beepLatency = 0;
-    noSound = true;
+    //correction beep latency 
+    makeBeeps();
   }
 }
 

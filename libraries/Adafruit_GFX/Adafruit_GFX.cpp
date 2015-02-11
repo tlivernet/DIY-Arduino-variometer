@@ -358,7 +358,46 @@ void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++ ) {
       if(pgm_read_byte(bitmap + j * byteWidth + i / 8) & (128 >> (i & 7))) {
-	drawPixel(x+i, y+j, color);
+        drawPixel(x+i, y+j, color);
+      }
+    }
+  }
+}
+
+// Draw a 1-bit color bitmap at the specified x, y position from the
+// provided bitmap buffer (must be PROGMEM memory) using color as the
+// foreground color and bg as the background color.
+void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
+            const uint8_t *bitmap, int16_t w, int16_t h,
+            uint16_t color, uint16_t bg) {
+
+  int16_t i, j, byteWidth = (w + 7) / 8;
+  
+  for(j=0; j<h; j++) {
+    for(i=0; i<w; i++ ) {
+      if(pgm_read_byte(bitmap + j * byteWidth + i / 8) & (128 >> (i & 7))) {
+        drawPixel(x+i, y+j, color);
+      }
+      else {
+      	drawPixel(x+i, y+j, bg);
+      }
+    }
+  }
+}
+
+//Draw XBitMap Files (*.xbm), exported from GIMP,
+//Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
+//C Array can be directly used with this function
+void Adafruit_GFX::drawXBitmap(int16_t x, int16_t y,
+                              const uint8_t *bitmap, int16_t w, int16_t h,
+                              uint16_t color) {
+  
+  int16_t i, j, byteWidth = (w + 7) / 8;
+  
+  for(j=0; j<h; j++) {
+    for(i=0; i<w; i++ ) {
+      if(pgm_read_byte(bitmap + j * byteWidth + i / 8) & (1 << (i % 8))) {
+        drawPixel(x+i, y+j, color);
       }
     }
   }
@@ -446,7 +485,7 @@ void Adafruit_GFX::setTextWrap(boolean w) {
   wrap = w;
 }
 
-uint8_t Adafruit_GFX::getRotation(void) {
+uint8_t Adafruit_GFX::getRotation(void) const {
   return rotation;
 }
 
@@ -467,11 +506,11 @@ void Adafruit_GFX::setRotation(uint8_t x) {
 }
 
 // Return the size of the display (per current rotation)
-int16_t Adafruit_GFX::width(void) {
+int16_t Adafruit_GFX::width(void) const {
   return _width;
 }
  
-int16_t Adafruit_GFX::height(void) {
+int16_t Adafruit_GFX::height(void) const {
   return _height;
 }
 

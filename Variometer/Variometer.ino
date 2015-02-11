@@ -134,7 +134,7 @@ struct Conf
   float p0;
   uint8_t stat_index;
 } conf = {
-  0.8 , -1.1 , 0, 0, 50, true, 1040.00, 0
+  0.3, -1.1 , 0, 0, 50, true, 1040.00, 0
 };
 
 // Statistic structure (176 bits)
@@ -164,9 +164,7 @@ void writeStat(uint8_t index = conf.stat_index, Stat &value = stat)
 
 void incrementStatIndex()
 {
-  conf.stat_index++;
-  if (conf.stat_index > NB_STATS - 1)
-    conf.stat_index = 0;
+  conf.stat_index = (conf.stat_index == NB_STATS - 1)? 0 : conf.stat_index + 1;
   EEPROM_writeAnything(0, conf);
   readStat();
 }
@@ -221,14 +219,7 @@ void initEeprom()
 
 void renderChrono(Stat value = stat)
 {
-  uint16_t s;
-  if (value.chrono == 0 && value.chrono_start != 0) {
-    DateTime now = rtc.now();
-    s = now.unixtime() - value.chrono_start;
-  }
-  else
-    s = value.chrono;
-
+  uint16_t s = (value.chrono == 0 && value.chrono_start != 0)? rtc.now().unixtime() - value.chrono_start: value.chrono;
   uint8_t h = floor(s / 3600);
   s -= h * 3600;
   uint8_t m = floor(s / 60);
@@ -245,7 +236,7 @@ void renderChrono(Stat value = stat)
 
 void renderVario()
 {
-  if (varioState == true){
+  if (true == varioState){
     
     display.fillRect(0, 0, 84, 32, WHITE);
     // text display tests
@@ -279,6 +270,8 @@ void renderVario()
     }
     else {
       display.setCursor(62, 9);
+      // set up my_temperature
+      bmp085.getTemperature(&my_temperature);
       display.print((int)my_temperature);
       display.drawCircle(75, 10, 1, BLACK);
       display.setCursor(72, 9);
@@ -328,16 +321,13 @@ void renderVarioBar()
   }
 }
 
-void renderVolume(uint8_t dir = MENU_RIGHT)
+void renderVolume(bool volume)
 {
   display.clearDisplay();
   display.setTextSize(2);
   display.setTextColor(WHITE, BLACK);
 
-  if  (dir == MENU_RIGHT)
-    conf.volume = true;
-  else if (dir == MENU_LEFT)
-    conf.volume = false;
+  conf.volume = volume;
 
   push_write_eeprom = 0;
   get_time2 = millis();  //stop the refresh rendering vario
@@ -819,6 +809,7 @@ void updateBrightness()
   analogWrite(PIN_LIGHT, conf.light_cpt * 51);
 }
 
+
 int readVccPercent()
 {
   uint16_t real_bat = (int)(4.89 * analogRead(A0));
@@ -835,11 +826,13 @@ int readVccPercent()
   return percent;
 }
 
+
 uint8_t getBeepLatency(float variation)
 {
    int latency = 150 - (variation * 30);
    return (latency < 70)? 70: (latency > 150)? 150: latency;
 }
+
 
 uint16_t getBeepFrequency(float variation)
 {
@@ -847,14 +840,22 @@ uint16_t getBeepFrequency(float variation)
    return (frequency < 100)? 100: (frequency > 1300)? 1300 :frequency;
 }
 
-void resetAltitudeSensor()
+
+void updateAltitude(bool reset = false)
 {
   // get a new sensor event
   sensors_event_t event;
-  bmp085.getEvent(&event);
-  average_pressure = event.pressure;                   //put it in filter and take average
-  bmp085.getTemperature(&my_temperature);
-  Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure, my_temperature) + conf.currentAltitude;  //take new altitude in meters
+  bmp085.getEvent(&event);  
+  // put it in smooth filter and take average
+  average_pressure = (true == reset)? event.pressure : average_pressure * 0.94 + event.pressure * 0.06;
+  // take new altitude in meters
+  Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure) + conf.currentAltitude;
+}
+
+
+void resetAltitudeSensor()
+{
+  updateAltitude(true);
   altitude_temp = Altitude;
   alt = Altitude;
   tim = millis();
@@ -897,6 +898,7 @@ void makeBeeps()
   }
 }
 
+
 void setup()
 {
   //Serial.begin(9600);
@@ -929,21 +931,15 @@ void setup()
   updateBrightness();
 }
 
-void loop()
-{
-  readButtons();  
-  // get a new sensor event
-  sensors_event_t event;
-  bmp085.getEvent(&event);
-  // put it in filter and take average
-  average_pressure = average_pressure * 0.94 + event.pressure * 0.06;
-  // set up my_temperature
-  bmp085.getTemperature(&my_temperature);
-  // take new altitude in meters
-  Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure, my_temperature) + conf.currentAltitude;
 
+void loop()
+{  
   float tempo = micros();
-  // put it in filter and take average
+  
+  readButtons();    
+  updateAltitude();  
+  
+  // put it in smooth filter and take average
   //vario = 1000000 * ((alt - Altitude) / (tim - tempo)));
   vario = vario * 0.8 + (200000 * ((alt - Altitude) / (tim - tempo)));
   
@@ -1056,6 +1052,8 @@ void loop()
     //correction beep latency 
     makeBeeps();
   }
+    
+  //Serial.println((tempo - micros()));
 }
 
 void readButtons()
@@ -1080,7 +1078,7 @@ void readButtons()
         else if (varioState == false)
           renderMenu(menu.getCurrent(), MENU_RIGHT);
         else if (varioState == true)
-          renderVolume(MENU_RIGHT);
+          renderVolume(true);
       }
       else { //Left
         if (!menuUsed && varioState == false) {
@@ -1096,7 +1094,7 @@ void readButtons()
         else if (varioState == false)
           renderMenu(menu.getCurrent(), MENU_LEFT);
         else if (varioState == true)
-          renderVolume(MENU_LEFT);
+          renderVolume(false);
       }
       knobPosition = newKnobPosition;
     }

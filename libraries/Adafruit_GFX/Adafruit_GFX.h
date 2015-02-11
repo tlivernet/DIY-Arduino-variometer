@@ -48,6 +48,10 @@ class Adafruit_GFX : public Print {
       int16_t radius, uint16_t color),
     drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
       int16_t w, int16_t h, uint16_t color),
+    drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
+      int16_t w, int16_t h, uint16_t color, uint16_t bg),
+    drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, 
+      int16_t w, int16_t h, uint16_t color),
     drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color,
       uint16_t bg, uint8_t size),
     setCursor(int16_t x, int16_t y),
@@ -63,11 +67,10 @@ class Adafruit_GFX : public Print {
   virtual void   write(uint8_t);
 #endif
 
-  int16_t
-    height(void),
-    width(void);
+  int16_t height(void) const;
+  int16_t width(void) const;
 
-  uint8_t getRotation(void);
+  uint8_t getRotation(void) const;
 
  protected:
   const int16_t

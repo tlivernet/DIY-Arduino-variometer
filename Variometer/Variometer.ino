@@ -114,7 +114,6 @@ bool is_vario_button_push = false;
 uint16_t average_vcc = 0;             //variable to hold the value of Vcc from battery
 float average_pressure;
 unsigned long get_time1 = millis();
-unsigned long get_time2 = millis();
 
 uint8_t push_write_eeprom = 6;
 float    my_temperature;
@@ -238,18 +237,18 @@ void renderVario()
 {
   if (true == varioState){
     
-    display.fillRect(0, 0, 84, 32, WHITE);
-    // text display tests
-    display.setCursor(0, 0);
-  
+    display.clearDisplay();
+    
+    //ALtitude
+    display.setCursor(0, 0);  
     display.setTextColor(BLACK);
     display.setTextSize(2);
     display.print((int)Altitude);
     display.setTextSize(1);
     display.print(F("m"));
     
-    DateTime now = rtc.now();
-      
+    //Time
+    DateTime now = rtc.now();      
     display.setCursor(55, 0);  
     renderZero(now.hour());
     display.print(now.hour());
@@ -259,18 +258,25 @@ void renderVario()
     renderZero(now.minute());
     display.print(now.minute());
   
-    if (now.second() % 2 == 0) {   
+    //Chrono
+    display.setCursor(0, 41);
+    display.print(F("M"));
+    display.print(conf.stat_index + 1);
+    display.print(F(" "));
+    renderChrono();
   
-      uint8_t vcc = readVccPercent();
+    if (now.second() % 2 == 0) {   
+      //Battery level
+      uint8_t vccPixels = getVccPixels();
       uint8_t bat_x = 72;
       uint8_t bat_y = 9;
       display.drawRect(bat_x + 2, bat_y, 10, 6, BLACK);
       display.fillRect(bat_x, bat_y + 2, 2, 2, BLACK);
-      display.fillRect(bat_x + 3 + (int)(99 - vcc) / 12, bat_y + 1, 8 - (int)(99 - vcc) / 12, 4, BLACK);   
+      display.fillRect(bat_x + 3 + 8 - vccPixels, bat_y + 1, vccPixels, 4, BLACK);   
     }
     else {
-      display.setCursor(62, 9);
       // set up my_temperature
+      display.setCursor(62, 9);      
       bmp085.getTemperature(&my_temperature);
       display.print((int)my_temperature);
       display.drawCircle(75, 10, 1, BLACK);
@@ -278,11 +284,11 @@ void renderVario()
       display.print(F(" C"));
     }
   
+    //Vario
     display.setTextSize(2);
-    display.setCursor(0, 16);
-  
+    display.setCursor(0, 16);  
     display.setTextColor(WHITE, BLACK);
-  
+    
     float vario_abs = abs(vario);
     display.print((vario <= -0.05) ? F("-") : (vario >= 0.05) ? F("+") : F(" "));
     uint8_t m = floor(vario_abs);
@@ -291,35 +297,18 @@ void renderVario()
     display.print(round(10 * vario_abs) - (10 * m));
     display.setTextSize(1);
     display.setCursor(48, 24);
-    display.print(F("m/s"));
-  
-    display.setTextSize(1);
-    display.setTextColor(BLACK);
-    display.setCursor(0, 41);
-    display.fillRect(0, 41, 84, 7, WHITE);
-  
-    display.print(F("M"));
-    display.print(conf.stat_index + 1);
-    display.print(F(" "));
-    renderChrono();
-    
-    display.display();
-  }
-}
+    display.print(F("m/s"));  
 
-void renderVarioBar()
-{
-  if (varioState == true){
-    
-    display.fillRect(0, 32, 84, 9, WHITE);
+    //vario bar
     if (vario >= 0)
       display.fillRect(42, 32, round(abs(vario) * 10), 8, BLACK);
     else
       display.drawRect(42, 32, -round(abs(vario) * 10), 8, BLACK);
-  
-    display.display();
+      
+    display.display();    
   }
 }
+
 
 void renderVolume(bool volume)
 {
@@ -330,7 +319,7 @@ void renderVolume(bool volume)
   conf.volume = volume;
 
   push_write_eeprom = 0;
-  get_time2 = millis();  //stop the refresh rendering vario
+  get_time1 = millis();  //stop the refresh rendering vario
 
   display.println(F("Sons:"));
   (false == conf.volume) ? display.print(F("Off")) : display.print(F("On"));
@@ -810,20 +799,20 @@ void updateBrightness()
 }
 
 
-int readVccPercent()
+uint8_t getVccPixels()
 {
   uint16_t real_bat = (int)(4.89 * analogRead(A0));
   //Serial.println(analogRead(A0));
   //Serial.println(real_bat);
   average_vcc = (average_vcc == 0) ? real_bat : (int)(average_vcc * 0.94 + real_bat * 0.06);
 
-  uint8_t percent = map(average_vcc,3100,4100,0,100);
-  if (percent >= 100)
-    percent = 99;
-  else if (percent < 1)
-    percent = 1;
+  uint8_t pixels = map(average_vcc,3100,4100,0,8);
+  if (pixels > 8)
+    pixels = 8;
+  else if (pixels < 1)
+    pixels = 1;
 
-  return percent;
+  return pixels;
 }
 
 
@@ -933,14 +922,13 @@ void setup()
 
 
 void loop()
-{  
+{
   float tempo = micros();
   
   readButtons();    
   updateAltitude();  
   
   // put it in smooth filter and take average
-  //vario = 1000000 * ((alt - Altitude) / (tim - tempo)));
   vario = vario * 0.8 + (200000 * ((alt - Altitude) / (tim - tempo)));
   
   /* TEST BLOC */  
@@ -948,7 +936,7 @@ void loop()
   vario = vario + 0.01;
   if (vario > 4)
     vario = 0;
- */ 
+  */ 
   
   // Update stats if chrono is running
   if (stat.chrono_start != 0) {
@@ -972,19 +960,11 @@ void loop()
   
   // make some beeps...
   makeBeeps();
-  
-  //every 200 milliseconds,
-  if (millis() >= (get_time1 + 200))
-  {
-    get_time1 = millis();    
-    // update vario bar
-    renderVarioBar();
-  }
 
   //every second
-  if (millis() >= (get_time2 + 1000))
+  if (millis() >= (get_time1 + 1000))
   {
-    get_time2 = millis();
+    get_time1 = millis();
 
     // proceedings of the dynamic display of vario
     renderVario();
@@ -1011,7 +991,7 @@ void loop()
       display.setTextColor(BLACK);
       display.setCursor(0, 41);
       display.fillRect(0, 41, 84, 7, WHITE);
-      get_time2 = millis();  //stop the refresh rendering vario
+      get_time1 = millis();  //stop the refresh rendering vario
       display.print(F("R.A.Z. stat M"));
       display.print(conf.stat_index + 1);
       display.display();
@@ -1067,7 +1047,7 @@ void readButtons()
       if (newKnobPosition > knobPosition) { //Right
         if (!menuUsed && varioState == false) {
           if (menu.getCurrent().getShortkey() == MENU_STAT && stat_displayed < NB_STATS) {
-            get_time2 += 1000;
+            get_time1 += 1000;
             //stat_blink_status = true;
             stat_displayed++;
             renderMenu();
@@ -1083,7 +1063,7 @@ void readButtons()
       else { //Left
         if (!menuUsed && varioState == false) {
           if (menu.getCurrent().getShortkey() == MENU_STAT && stat_displayed > 1) {
-            get_time2 += 1000;
+            get_time1 += 1000;
             //stat_blink_status = true;
             stat_displayed--;
             renderMenu();
@@ -1106,12 +1086,12 @@ void readButtons()
 
     // in menu, clic an item
     if (varioState == false) {
-      get_time2 = millis() - 1000;
+      get_time1 = millis() - 1000;
       menu.use();
     }
     // in vario, button enter init timer
     else {
-      get_time2 = millis();
+      get_time1 = millis();
       is_vario_button_push = true;
     }
   }

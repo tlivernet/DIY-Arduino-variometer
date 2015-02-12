@@ -239,8 +239,7 @@ void renderVario()
     
     display.clearDisplay();
     
-    //ALtitude
-    display.setCursor(0, 0);  
+    //ALtitude 
     display.setTextColor(BLACK);
     display.setTextSize(2);
     display.print((int)Altitude);
@@ -284,20 +283,19 @@ void renderVario()
       display.print(F(" C"));
     }
   
-    //Vario
+    //Vario    
+    display.setTextColor(WHITE, BLACK);
+    display.setCursor(48, 24);
+    display.print(F("m/s")); 
     display.setTextSize(2);
     display.setCursor(0, 16);  
-    display.setTextColor(WHITE, BLACK);
     
     float vario_abs = abs(vario);
     display.print((vario <= -0.05) ? F("-") : (vario >= 0.05) ? F("+") : F(" "));
     uint8_t m = floor(vario_abs);
     display.print(m);
     display.print(F("."));
-    display.print(round(10 * vario_abs) - (10 * m));
-    display.setTextSize(1);
-    display.setCursor(48, 24);
-    display.print(F("m/s"));  
+    display.print(round(10 * vario_abs) - (10 * m));     
 
     //vario bar
     if (vario >= 0)
@@ -354,6 +352,8 @@ void renderStatItem(float value, const __FlashStringHelper *unit, bool integer =
     display.print((int)value);
   }
   else {
+    display.print(value, 1);
+    /*
     if (value < 0)
       display.print(F("-"));
     float value_abs = abs(value);
@@ -361,8 +361,8 @@ void renderStatItem(float value, const __FlashStringHelper *unit, bool integer =
     display.print(m);
     display.print(F("."));
     display.print(round(10 * value_abs) - (10 * m));
+    */
   }
-  display.setTextSize(1);
   display.print(unit);
 }
 
@@ -381,8 +381,7 @@ void renderDateTime(DateTime d, uint8_t bold = 0)
   renderZero(d.day());
   display.print(d.day());
 
-  if (bold != 0)
-    display.setTextColor(BLACK);
+  display.setTextColor(BLACK);
   display.print(F("/"));
 
   if (bold == DATE_MONTH)
@@ -390,8 +389,7 @@ void renderDateTime(DateTime d, uint8_t bold = 0)
   renderZero(d.month());
   display.print(d.month());
 
-  if (bold != 0)
-    display.setTextColor(BLACK);
+  display.setTextColor(BLACK);
   display.print(F("/"));
 
   if (bold == DATE_YEAR)
@@ -399,8 +397,7 @@ void renderDateTime(DateTime d, uint8_t bold = 0)
   renderZero(d.year() - 2000);
   display.print(d.year() - 2000); //reduces the length of the year string
 
-  if (bold != 0)
-    display.setTextColor(BLACK);
+  display.setTextColor(BLACK);
   display.print(F(" "));
 
   //display time
@@ -409,8 +406,7 @@ void renderDateTime(DateTime d, uint8_t bold = 0)
   renderZero(d.hour());
   display.print(d.hour());
 
-  if (bold != 0)
-    display.setTextColor(BLACK);
+  display.setTextColor(BLACK);
   display.print(F(":"));
 
   if (bold == DATE_MINUTE)
@@ -418,33 +414,33 @@ void renderDateTime(DateTime d, uint8_t bold = 0)
   renderZero(d.minute());
   display.print(d.minute());
 
-  if (bold != 0)
-    display.setTextColor(BLACK);
+  //display.setTextColor(BLACK);
 }
 
 void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
 {
   display.clearDisplay();
   display.setTextSize(1);
-  display.setTextColor(BLACK);
-  display.setCursor(0, 0);
-  display.setTextSize(1);
   display.setTextColor(WHITE, BLACK);
 
-  if (newMenuItem.getShortkey() != MENU_LEFT)
+  if (newMenuItem.getShortkey() != MENU_LEFT){
     if (newMenuItem.getShortkey() < 10)
       display.println(F("Accueil"));
     else if (newMenuItem.getShortkey() >= 10 && newMenuItem.getShortkey() < 20)
       display.println(F("Options"));
-    else if (newMenuItem.getShortkey() >= 20 && newMenuItem.getShortkey() < 30)
+    else if (newMenuItem.getShortkey() == MENU_RECRESET)
       display.println(F("Statistiques"));
+  }
 
-  display.setTextSize(2);
-  display.println(newMenuItem.getName());
-
-  if (!menuUsed)
-    display.setTextColor(BLACK);
-
+  if (newMenuItem.getShortkey() != MENU_STAT){
+    
+    display.setTextSize(2);
+    display.println(newMenuItem.getName());
+    
+    if (!menuUsed)
+      display.setTextColor(BLACK);
+  }
+  
   if (varioState == true && menuUsed) {
     varioState = false;
     menuUsed = false;
@@ -561,11 +557,12 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
         break;
 
       case MENU_DATE:
-        {
+        {         
+          display.setTextSize(1);
+          
           if (menuUsed_last == false) {
 
             menuUsed_last = true;
-            display.setTextSize(1);
 
             DateTime now = rtc.now();
             renderDateTime(now);
@@ -578,8 +575,6 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           }
           else {
 
-            display.setTextSize(1);
-
             if  (dir != MENU_RIGHT && dir != MENU_LEFT) {
 
               if (conf_date_displayed < 5) {
@@ -591,10 +586,9 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
               else {
                 menuUsed = false;
                 menuUsed_last = true;
-                conf_date_displayed = 0;
-                display.setTextColor(BLACK);
+                conf_date_displayed = 0;                
                 rtc.adjust(DateTime(date_year, date_month, date_day, date_hour, date_minute, 0));
-                display.setTextSize(1);
+                display.setTextColor(BLACK);
                 renderDateTime(rtc.now());
               }
             }
@@ -641,10 +635,6 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           Stat stat_to_display;
           readStat(stat_displayed - 1, stat_to_display);
 
-          display.clearDisplay();
-          display.setTextSize(1);
-          display.setTextColor(WHITE, BLACK);
-
           if (stat_to_display.chrono == 0) {
             display.print(F("M"));
             display.print(stat_displayed);
@@ -653,20 +643,18 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           else {
 
             //if (stat_blink_status) {
-
+              display.setTextColor(BLACK);
               renderDateTime(DateTime(stat_to_display.chrono_start));
               display.println();
             //}
             //else {
               
-            display.setTextColor(BLACK);
             display.print(F("Chrono:"));
             renderChrono(stat_to_display);
             display.println();
             
             //}
             //stat_blink_status = !stat_blink_status;
-
             
             display.print(F("Alt max:"));
             renderStatItem(stat_to_display.alti_max, F("m"), true);

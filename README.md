@@ -5,9 +5,15 @@
 - **PIN\_SCLK** : D8 --> D4
 - **PIN\_LIGHT** : D11 --> Inchangée
 - **PIN\_SCE** : D7 --> Inchangée
-- **PIN\_RESET** : D8 --> D6
-- **PIN\_DC** : D6 --> D5
-- **PIN\_SDIN** :  D5 --> D4
+- **PIN\_RESET** : D6 --> D8
+- **PIN\_DC** : D5 --> D6
+- **PIN\_SDIN** :  D4 --> D5
+
+Bien sûr vous pouvez adapter le code suivant l'ordre des branchements de l'écran à votre disposition.
+
+Cela est valable aussi avec l'encodeur digital pour inverser le sens de rotation en remplaçant ```
+Encoder knob(3, 2);``` par ``` Encoder knob(2, 3);```
+
 
 
 DIY Arduino variometer

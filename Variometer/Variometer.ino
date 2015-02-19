@@ -32,7 +32,6 @@ uint8_t date_minute;
 /////////////////////////////////////////
 
 //////////////////ENCODER///////////////////////
-#define ENCODER_OPTIMIZE_INTERRUPTS
 #define Enter 12
 #define ENCODER_STEP 4
 
@@ -84,7 +83,6 @@ MenuItem m_recreset = MenuItem(NULL, MENU_RECRESET); //Reset records
 /////////////////////////////////////////
 
 //////////////////ECRAN///////////////////////
-#define enablePartialUpdate
 #define PIN_SCLK  4
 #define PIN_LIGHT  11
 #define PIN_SCE   7
@@ -204,15 +202,9 @@ void resetAllStats()
 void playConfirmMelody()
 {
   if (true == conf.volume){
-    toneAC(700, 10, 150);
-    toneAC(500, 10, 150);
+    toneAC(700, 150);
+    toneAC(500, 150);
   }
-}
-
-void initEeprom()
-{
-  EEPROM_writeAnything(0, conf);
-  resetAllStats();
 }
 
 
@@ -665,12 +657,8 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
             display.println();
             
             display.print(F("m/s:"));
-            float m = floor(stat_to_display.txchutemax);
-            m = m + (round(10 * stat_to_display.txchutemax) - (10 * m)) / 10;
-            renderStatItem(m, F("|"));
-            m = floor(stat_to_display.txchutemin);
-            m = m + (round(10 * stat_to_display.txchutemin) - (10 * m)) / 10;
-            renderStatItem(m, F(""));
+            renderStatItem(stat_to_display.txchutemax, F("|"));
+            renderStatItem(stat_to_display.txchutemin, F(""));
             display.println();
             
             display.print(F("Cumul:"));
@@ -710,7 +698,6 @@ void menuSetup()
   m_contrast.name = F("Contra"); //eclairage
   m_date.name = F("Date"); //date
   m_retour2.name = F("Retour"); //Retour
-  //m_stat.name = F("Stat"); //Stats
   m_recreset.name = F("Reset"); //Reset records
 
   /*
@@ -863,7 +850,8 @@ void makeBeeps()
      
       if ((vario > conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0) || (vario < conf.vario_sink_rate_start && conf.vario_sink_rate_start != 0)) {
         //when climbing make faster and shorter beeps
-        toneAC(getBeepFrequency(variation), 10, beepLatency, true);
+        //toneAC(getBeepFrequency(variation), 10, beepLatency, true);
+        toneAC(getBeepFrequency(variation), beepLatency);
       }
       else {
         toneAC(0);
@@ -880,10 +868,13 @@ void setup()
 {
   //Serial.begin(9600);
 
+  // clear the configuration
+  if (initialisation){
+    EEPROM_writeAnything(0, conf);
+    resetAllStats();
+  }
+  
   // load the configuration
-  if (initialisation)
-    initEeprom();
-
   EEPROM_readAnything(0, conf);
   readStat();
 

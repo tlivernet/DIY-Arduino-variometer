@@ -1,4 +1,13 @@
-# MISE À JOUR #
+DIY Arduino variometer
+==================
+
+- [Mise à jour](#mise-à-jour)
+- [Présentation](#présentation)
+- [Schéma](#schéma)
+- [Installation](#installation)
+- [Interface et utilisation](#interface-et-utilisation)
+
+## MISE À JOUR
 
 **Attention !** Lors de la dernière mise à jour le schéma de connection de l'écran a été modifié pour des soucis d'optimisations du montage.
 
@@ -14,23 +23,15 @@ Bien sûr vous pouvez adapter le code suivant l'ordre des branchements de l'écr
 Cela est valable aussi avec l'encodeur digital pour inverser le sens de rotation en remplaçant ```
 Encoder knob(3, 2);``` par ``` Encoder knob(2, 3);```
 
+**Il faut également ré-initialiser la mémoire EEPROM en téléversant une première fois avec la variable initialisation à true puis re-téléverser avec initialisation à false (voir partie [Installation](#installation)).**
 
-
-DIY Arduino variometer
-==================
-
-- [Vidéo](#vidéo)
-- [Matériel et coût](#matériel-et-coût)
-- [Schéma](#schéma)
-- [Installation](#installation)
-- [Interface](#interface)
-
-## Vidéo
+## Présentation
+### Vidéo de démo
 
 [![Youtube - DIY - Variomètre à base d'Arduino nano](http://img.youtube.com/vi/KeNAhEgbHnc/0.jpg)](http://www.youtube.com/watch?v=KeNAhEgbHnc)
 
 
-## Matériel et coût
+### Matériel et coût
 
 Le but de ce projet est de fabriquer un variomètre à faible coût pour une utilisation en vol libre (dans mon cas la pratique du parapente).
 Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay international (prix de janvier 2014) :
@@ -59,22 +60,32 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 
 ## Installation
 
+Une fois votre montage terminé il faut compiler et téléverser le code sur votre Arduino. Pour cela il vous faudra utiliser l'IDE Arduino.
+
 **Il faut utiliser [au minimum la version 1.5 de l'IDE Arduino](http://arduino.cc/en/main/software#toc3), sinon des erreurs de compilation apparaissent !**
 
-Lors du premier téléversement du programme sur l'Arduino il est important de passer la variable *initialisation* à *true*.
-Celle-ci permet d'initisaliser correctement la mémoire Eeprom (stockant les statistiques et les options).
+Tout d'abord vous devez installer les librairies fournies avec le projet. Copiez le contenu du dossier librairies dans le dossier librairies de votre installation (par exemple C:\Users\Toto\Documents\Arduino\libraries)
+
+Ensuite éditez avec l'IDE Arduino le fichier Variometer/Variometer.ino et cliquez sur le bouton "Vérifier" en haut du logiciel. Après un certain temps le message "Compilation terminée" devrait apparaitre. Si vous avez des erreurs vérifiez que les librairies sont bien installées (cf plus haut).
+
+Une fois la compilation OK il faut téléverser le programme sur l'Arduino à l'aide d'un câble USB par exemple et en cliquant sur le bouton "Téléverser" de l'IDE. **Mais avant cela lisez ce qui suit !**
+
+**Lors du premier téléversement du programme sur l'Arduino il est important de mettre dans le code la variable  initialisation à true.
+Celle-ci permet d'initisaliser correctement la mémoire Eeprom (stockant les statistiques et les options).**
 
 ```
 bool initialisation = true; 
 ```
 
-Une fois le premier allumage fait il faut donc re-téléverser le code avec cette fois-ci *initialisation* à *false*. Si cela n’est pas fait la mémoire Eeprom sera effacée à chaque allumage.
+**Une fois le premier allumage fait il faut donc re-téléverser le code avec cette fois-ci initialisation à false. Si cela n’est pas fait la mémoire Eeprom sera effacée à chaque allumage !**
 
 ```
 bool initialisation = false; 
 ```
 
-## Interface
+
+## Interface et utilisation
+
 
 Ce variomètre utilise un minimum de commande pour naviguer dans le menu et interagir avec l'interface. Nous utilisons un encodeur digital permettant trois actions: Gauche - Droite - Valider.
 
@@ -120,9 +131,9 @@ Lors d'un appui long sur le poussoir de l'encodeur, les statistiques sont réini
 
 L'enregistrement des statistiques de vol se déclenche automatiquement.
 Pour cela le variomètre détecte une prise ou une baisse d'altitude significative entrainant le statut "en vol".
-Lorsqu'il n'y a pas de baisse ou de prise d'altitude significative depuis un certain temps, le statut "en vol" s'arrête.
+Lorsqu'il n'y a pas de baisse ou de prise d'altitude significative pendant un certain temps, le statut "en vol" s'arrête.
 
-A la fin du vol les statistiques sont enregistrés en dur donc ne sont pas perdus à l'extinction du variomètre.
+A la fin du vol les statistiques sont sauvegardées et ne sont pas perdues à l'extinction du variomètre.
 
 Ce programme peut enregistrer 5 rapports de vol. Une fois un vol terminé, la piste suivante d'enregistrement est sélectionnée. Si celle-ci n'est pas vide elle n'est pas écrasée. Il faut alors manuellement effacer la plage de stat en cours ou reset toutes les plages.
 

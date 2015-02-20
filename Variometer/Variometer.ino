@@ -134,16 +134,16 @@ struct Conf
   0.3, -1.1 , 0, 0, 50, true, 1040.00, 0
 };
 
-// Statistic structure (176 bits)
-#define  NB_STATS 5
+// Statistic structure (128 bits)
+#define  NB_STATS 6
 struct Stat
 {
   uint32_t chrono_start;
   uint16_t chrono;
   int alti_max;
   int alti_min;
-  float txchutemax;
-  float txchutemin;
+  uint8_t txchutemax;
+  uint8_t txchutemin;
   float cumul_alt;
 }  stat = {
   0, 0, -20000, 20000, 0, 0, 0
@@ -202,8 +202,7 @@ void resetAllStats()
 void playConfirmMelody()
 {
   if (true == conf.volume){
-    toneAC(700, 150);
-    toneAC(500, 150);
+    toneAC(700, 300);
   }
 }
 
@@ -269,10 +268,17 @@ void renderVario()
       // set up my_temperature
       display.setCursor(62, 9);      
       bmp085.getTemperature(&my_temperature);
-      display.print((int)my_temperature);
-      display.drawCircle(75, 10, 1, BLACK);
-      display.setCursor(72, 9);
-      display.print(F(" C"));
+      display.print((int)my_temperature);      
+      display.drawPixel(75, 9, BLACK);
+      display.drawPixel(76, 9, BLACK);
+      display.drawPixel(74, 10, BLACK);
+      display.drawPixel(74, 11, BLACK);
+      display.drawPixel(75, 12, BLACK);
+      display.drawPixel(76, 12, BLACK);
+      display.drawPixel(77, 10, BLACK);
+      display.drawPixel(77, 11, BLACK);      
+      display.setCursor(79, 9);
+      display.print(F("C"));
     }
   
     //Vario    
@@ -345,15 +351,6 @@ void renderStatItem(float value, const __FlashStringHelper *unit, bool integer =
   }
   else {
     display.print(value, 1);
-    /*
-    if (value < 0)
-      display.print(F("-"));
-    float value_abs = abs(value);
-    uint8_t m = floor(value_abs);
-    display.print(m);
-    display.print(F("."));
-    display.print(round(10 * value_abs) - (10 * m));
-    */
   }
   display.print(unit);
 }
@@ -657,8 +654,8 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
             display.println();
             
             display.print(F("m/s:"));
-            renderStatItem(stat_to_display.txchutemax, F("|"));
-            renderStatItem(stat_to_display.txchutemin, F(""));
+            renderStatItem(-(float)stat_to_display.txchutemax/10, F("|"));
+            renderStatItem((float)stat_to_display.txchutemin/10, F(""));
             display.println();
             
             display.print(F("Cumul:"));
@@ -811,7 +808,7 @@ void updateAltitude(bool reset = false)
   sensors_event_t event;
   bmp085.getEvent(&event);  
   // put it in smooth filter and take average
-  average_pressure = (true == reset)? event.pressure : average_pressure * 0.94 + event.pressure * 0.06;
+  average_pressure = (true == reset)? event.pressure : average_pressure * 0.95 + event.pressure * 0.05;
   // take new altitude in meters
   Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure) + conf.currentAltitude;
 }
@@ -927,11 +924,12 @@ void loop()
       stat.alti_max = Altitude;
     if (Altitude < stat.alti_min)
       stat.alti_min = Altitude;
-
-    if (vario < stat.txchutemax)
-      stat.txchutemax = vario;
-    if (vario > stat.txchutemin)
-      stat.txchutemin = vario;
+    
+    int decivario = (int)(vario*10);
+    if (decivario < -stat.txchutemax)
+      stat.txchutemax = -decivario;
+    if (decivario > stat.txchutemin)
+      stat.txchutemin = decivario;
   }
   
   alt = Altitude;

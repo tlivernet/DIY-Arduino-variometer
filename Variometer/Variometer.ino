@@ -119,11 +119,11 @@ float    alt;
 float    tim;
 
 #define memoryBase 32
-// Configuration structure (137 bits)
+// Configuration structure (89 bits)
 struct Conf
 {
-  float vario_climb_rate_start;    //minimum climb beeping value(ex. start climbing beeping at 0.4m/s)
-  float vario_sink_rate_start;    //maximum sink beeping value (ex. start sink beep at -1.1m/s)
+  int8_t vario_climb_rate_start;    //minimum climb beeping value(ex. start climbing beeping at 0.4m/s)
+  int8_t vario_sink_rate_start;    //maximum sink beeping value (ex. start sink beep at -1.1m/s)
   int currentAltitude;
   uint8_t light_cpt;
   uint8_t contrast_default;
@@ -131,11 +131,21 @@ struct Conf
   float p0;
   uint8_t stat_index;
 } conf = {
-  0.3, -1.1 , 0, 0, 50, true, 1040.00, 0
+  3, -11 , 0, 0, 50, true, 1040.00, 0
 };
 
+float getVarioClimbRateStart()
+{
+  return (float)conf.vario_climb_rate_start/10;
+}
+
+float getVarioSinkRateStart()
+{
+  return (float)conf.vario_sink_rate_start/10;
+}
+
 // Statistic structure (128 bits)
-#define  NB_STATS 6
+#define  NB_STATS 7
 struct Stat
 {
   uint32_t chrono_start;
@@ -202,7 +212,7 @@ void resetAllStats()
 void playConfirmMelody()
 {
   if (true == conf.volume){
-    toneAC(700, 300);
+    toneAC(700, 500);
   }
 }
 
@@ -481,14 +491,14 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
 
       case MENU_MONTEE:
         {
-          conf.vario_climb_rate_start = updateConfItem(conf.vario_climb_rate_start, dir, 0.1);
+          conf.vario_climb_rate_start = updateConfItem(conf.vario_climb_rate_start, dir, 1);
 
-          if (conf.vario_climb_rate_start < 0.1) {
+          if (conf.vario_climb_rate_start < 1) {
             conf.vario_climb_rate_start = 0;
             display.print(F("Off"));
           }
           else {
-            display.print(conf.vario_climb_rate_start);
+            display.print(getVarioClimbRateStart(), 1);
             display.setTextSize(1);
             display.print(F("m/s"));
           }
@@ -497,14 +507,14 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
 
       case MENU_DESCENTE:
         {
-          conf.vario_sink_rate_start = updateConfItem(conf.vario_sink_rate_start, dir, 0.1);
+          conf.vario_sink_rate_start = updateConfItem(conf.vario_sink_rate_start, dir, 1);
 
           if (conf.vario_sink_rate_start >= 0) {
             conf.vario_sink_rate_start = 0;
             display.print(F("Off"));
           }
           else {
-            display.print(conf.vario_sink_rate_start);
+            display.print(getVarioSinkRateStart(), 1);
             display.setTextSize(1);
             display.print(F("m/s"));
           }
@@ -717,7 +727,6 @@ void menuSetup()
 
   */
   m_vario.addAfter(m_stats);
-
   m_stats.addAfter(m_options);
   m_stats.addRight(m_stat);
   m_stat.addBefore(m_retour2);
@@ -834,8 +843,12 @@ void makeBeeps()
     noSound = (timeNoPauseBeep <= 30)? false: !noSound;
     
     if (false == noSound){
+      
+      float varioClimbRateStart = getVarioClimbRateStart();
+      float varioSinkRateStart = getVarioSinkRateStart();
+      
       //beep even if vario has negative value but vario is climbing
-      float variation = (vario < conf.vario_climb_rate_start && vario_diff >= conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0)? vario_diff: vario;
+      float variation = (vario < varioClimbRateStart && vario_diff >= varioClimbRateStart && varioClimbRateStart != 0)? vario_diff: vario;
             
       if (timeNoPauseBeep <= 30){ 
         timeNoPauseBeep++;
@@ -845,7 +858,7 @@ void makeBeeps()
         beepLatency = getBeepLatency(variation);
       }
      
-      if ((vario > conf.vario_climb_rate_start && conf.vario_climb_rate_start != 0) || (vario < conf.vario_sink_rate_start && conf.vario_sink_rate_start != 0)) {
+      if ((vario > varioClimbRateStart && varioClimbRateStart != 0) || (vario < varioSinkRateStart && varioSinkRateStart != 0)) {
         //when climbing make faster and shorter beeps
         //toneAC(getBeepFrequency(variation), 10, beepLatency, true);
         toneAC(getBeepFrequency(variation), beepLatency);
@@ -912,7 +925,7 @@ void loop()
   vario = vario + 0.01;
   if (vario > 4)
     vario = 0;
-  */ 
+  */
   
   // Update stats if chrono is running
   if (stat.chrono_start != 0) {
@@ -1008,8 +1021,7 @@ void loop()
     }
     //correction beep latency 
     makeBeeps();
-  }
-    
+  }    
   //Serial.println((tempo - micros()));
 }
 

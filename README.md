@@ -135,7 +135,7 @@ Lorsqu'il n'y a pas de baisse ou de prise d'altitude significative pendant un ce
 
 A la fin du vol les statistiques sont sauvegardées et ne sont pas perdues à l'extinction du variomètre.
 
-Ce programme peut enregistrer 5 rapports de vol. Une fois un vol terminé, la piste suivante d'enregistrement est sélectionnée. Si celle-ci n'est pas vide elle n'est pas écrasée. Il faut alors manuellement effacer la plage de stat en cours ou reset toutes les plages.
+Ce programme peut enregistrer 7 rapports de vol. Une fois un vol terminé, la piste suivante d'enregistrement est sélectionnée. Si celle-ci n'est pas vide elle n'est pas écrasée. Il faut alors manuellement effacer la plage de stat en cours (avec un appui long sur le bouton depuis l'interface Vario) ou reset toutes les plages (Menu Stats --> Reset).
 
 
 **Statistique**

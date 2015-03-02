@@ -105,6 +105,7 @@ En plus de fournir des informations en temps réel, un système de détection au
 - Options
 	- Retour
 	- Tare
+	- QNH
 	- Alti
 	- Montee
 	- Desc
@@ -170,6 +171,10 @@ Remise à zéro des statistiques.
 **Tare**
 
 Initialise l'altitude zéro sur l'altitude actuelle.
+
+**QNH**
+
+Pression atmosphérique convertie au niveau de la mer selon les conditions de l'atmosphère standard.
 
 **Alti**
 

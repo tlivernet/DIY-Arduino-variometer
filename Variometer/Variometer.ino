@@ -51,12 +51,13 @@ uint8_t stat_displayed = 1;
 #define MENU_LEFT 1
 #define MENU_VARIO 2
 #define MENU_TARE 10
-#define MENU_ALTITUDE 11
-#define MENU_MONTEE 12
-#define MENU_DESCENTE 13
-#define MENU_LIGHT 14
-#define MENU_CONTRASTE 15
-#define MENU_DATE 16
+#define MENU_QNH 11
+#define MENU_ALTITUDE 12
+#define MENU_MONTEE 13
+#define MENU_DESCENTE 14
+#define MENU_LIGHT 15
+#define MENU_CONTRASTE 16
+#define MENU_DATE 17
 #define MENU_STAT 20
 #define MENU_RECRESET 21
 
@@ -69,6 +70,7 @@ MenuItem m_stats = MenuItem(NULL, MENU_RIGHT); //Records
 MenuItem m_retour = MenuItem(NULL, MENU_LEFT); //Retour
 
 MenuItem m_tare = MenuItem(NULL, MENU_TARE); //Tare
+MenuItem m_qnh = MenuItem(NULL, MENU_QNH); //QNH
 MenuItem m_altitude = MenuItem(NULL, MENU_ALTITUDE); //Altitude
 MenuItem m_montee = MenuItem(NULL, MENU_MONTEE); //Montée
 MenuItem m_descente = MenuItem(NULL, MENU_DESCENTE); //Descente
@@ -477,6 +479,18 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
         }
         break;
 
+      case MENU_QNH:
+        {
+          conf.p0 = updateConfItem(conf.p0, dir, 1);
+          //prevent chrono start and beeping
+          resetAltitudeSensor();
+
+          display.print(conf.p0);
+          display.setTextSize(1);
+          display.print(F("hPa"));
+        }
+        break;
+
       case MENU_ALTITUDE:
         {
           conf.currentAltitude = updateConfItem(conf.currentAltitude, dir, 5);
@@ -488,6 +502,7 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           display.print(F("m"));
         }
         break;
+
 
       case MENU_MONTEE:
         {
@@ -698,6 +713,7 @@ void menuSetup()
   m_stats.name = F("Stats"); //Stats
   m_retour.name = F("Retour"); //Retour
   m_tare.name = F("Tare"); //Tare
+  m_qnh.name = F("QNH"); //QNH
   m_altitude.name = F("Alti"); //Altitude
   m_montee.name = F("Montee"); //Montée
   m_descente.name = F("Desc"); //Descente
@@ -735,7 +751,8 @@ void menuSetup()
 
   m_options.addRight(m_tare);
   m_tare.addBefore(m_retour);
-  m_tare.addAfter(m_altitude);
+  m_tare.addAfter(m_qnh);
+  m_qnh.addAfter(m_altitude);  
   m_altitude.addAfter(m_montee);
   m_montee.addAfter(m_descente);
   m_descente.addAfter(m_light);

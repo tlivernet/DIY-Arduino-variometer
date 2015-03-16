@@ -43,15 +43,7 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 - Mini USB Battery Charging Board 5V | 0,90€
 - Buzzer 8 ohm | 0,20€
 - DC-DC Converter Step Up 1-5V 500mA | 1,15€
-- 3,
-- 
-- 
-- 
-- 
-- 
-- 
-- 
-- V 600mAh LiPo Battery | 3,25€
+- 3,7V 600mAh LiPo Battery | 3,25€
 - RTC Module for Arduino | 1,55€
 - 3x 10k Ohm resistor + 1x 120 Ohm resistor | 0,10€
 - Right Angle Mini Slide Switch | 0,10€	

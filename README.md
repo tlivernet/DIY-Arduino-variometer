@@ -43,7 +43,15 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 - Mini USB Battery Charging Board 5V | 0,90€
 - Buzzer 8 ohm | 0,20€
 - DC-DC Converter Step Up 1-5V 500mA | 1,15€
-- 3,7V 600mAh LiPo Battery | 3,25€
+- 3,
+- 
+- 
+- 
+- 
+- 
+- 
+- 
+- V 600mAh LiPo Battery | 3,25€
 - RTC Module for Arduino | 1,55€
 - 3x 10k Ohm resistor + 1x 120 Ohm resistor | 0,10€
 - Right Angle Mini Slide Switch | 0,10€	
@@ -136,7 +144,7 @@ Lorsqu'il n'y a pas de baisse ou de prise d'altitude significative pendant un ce
 
 A la fin du vol les statistiques sont sauvegardées et ne sont pas perdues à l'extinction du variomètre.
 
-Ce programme peut enregistrer 7 rapports de vol. Une fois un vol terminé, la piste suivante d'enregistrement est sélectionnée. Si celle-ci n'est pas vide elle n'est pas écrasée. Il faut alors manuellement effacer la plage de stat en cours (avec un appui long sur le bouton depuis l'interface Vario) ou reset toutes les plages (Menu Stats --> Reset).
+Ce programme peut enregistrer 8 rapports de vol. Une fois un vol terminé, la piste suivante d'enregistrement est sélectionnée. Si celle-ci n'est pas vide elle n'est pas écrasée. Il faut alors manuellement effacer la plage de stat en cours (avec un appui long sur le bouton depuis l'interface Vario) ou reset toutes les plages (Menu Stats --> Reset).
 
 
 **Statistique**

@@ -119,6 +119,7 @@ uint8_t push_write_eeprom = 6;
 float    my_temperature;
 float    alt;
 float    tim;
+float    cumul_alt;
 
 #define memoryBase 32
 // Configuration structure (89 bits)
@@ -136,6 +137,21 @@ struct Conf
   3, -11 , 0, 0, 50, true, 1040.00, 0
 };
 
+// Statistic structure (112 bits)
+#define  NB_STATS 8
+struct Stat
+{
+  uint32_t chrono_start;
+  uint16_t chrono;
+  int alti_max;
+  int alti_min;
+  uint8_t txchutemax;
+  uint8_t txchutemin;
+  uint16_t cumul_alt;
+}  stat = {
+  0, 0, -20000, 20000, 0, 0, 0
+};
+
 float getVarioClimbRateStart()
 {
   return (float)conf.vario_climb_rate_start / 10;
@@ -146,26 +162,11 @@ float getVarioSinkRateStart()
   return (float)conf.vario_sink_rate_start / 10;
 }
 
-// Statistic structure (128 bits)
-#define  NB_STATS 7
-struct Stat
-{
-  uint32_t chrono_start;
-  uint16_t chrono;
-  int alti_max;
-  int alti_min;
-  uint8_t txchutemax;
-  uint8_t txchutemin;
-  float cumul_alt;
-}  stat = {
-  0, 0, -20000, 20000, 0, 0, 0
-};
-
-
 void readStat(uint8_t index = conf.stat_index, Stat &value = stat)
 {
   EEPROM_readAnything(sizeof(Conf) + sizeof(Stat) * index, value);
 }
+
 void writeStat(uint8_t index = conf.stat_index, Stat &value = stat)
 {
   EEPROM_writeAnything(sizeof(Conf) + sizeof(Stat) * index, value);
@@ -958,7 +959,7 @@ void loop()
   if (stat.chrono_start != 0) {
 
     if (vario > 0)
-      stat.cumul_alt += Altitude - alt;
+      cumul_alt += Altitude - alt;
 
     if (Altitude > stat.alti_max)
       stat.alti_max = Altitude;
@@ -1026,6 +1027,7 @@ void loop()
         DateTime now = rtc.now();
         stat.chrono_start = now.unixtime();
         chrono_cpt = 0;
+        cumul_alt = 0;
       }
       else { // every 15 seconds, the altitude "zone" is updated
         chrono_cpt++;
@@ -1036,12 +1038,13 @@ void loop()
       }
     }
     if (stat.chrono_start != 0 && stat.chrono == 0) {
-      // if altitude left in the same "zone" (1.5 meters) during 15 seconds, the timer is stopped
+      // if altitude left in the same "zone" (1.5 meter) during 15 seconds, the timer is stopped
       if (altitude_temp - 0.75 < Altitude && altitude_temp + 0.75 > Altitude) {
         chrono_cpt++;
         if (chrono_cpt >= 15) {
           DateTime now = rtc.now();
           stat.chrono = now.unixtime() - stat.chrono_start;
+          stat.cumul_alt = (int)cumul_alt;
           writeStat();
           incrementStatIndex();
         }

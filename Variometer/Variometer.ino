@@ -45,7 +45,7 @@ bool menuUsed = false;
 bool menuUsed_last = false;
 bool varioState = false;
 uint8_t stat_displayed = 1;
-//bool stat_blink_status = false;
+bool stat_blink_status = false;
 
 #define MENU_RIGHT 0
 #define MENU_LEFT 1
@@ -138,12 +138,12 @@ struct Conf
 
 float getVarioClimbRateStart()
 {
-  return (float)conf.vario_climb_rate_start/10;
+  return (float)conf.vario_climb_rate_start / 10;
 }
 
 float getVarioSinkRateStart()
 {
-  return (float)conf.vario_sink_rate_start/10;
+  return (float)conf.vario_sink_rate_start / 10;
 }
 
 // Statistic structure (128 bits)
@@ -173,7 +173,7 @@ void writeStat(uint8_t index = conf.stat_index, Stat &value = stat)
 
 void incrementStatIndex()
 {
-  conf.stat_index = (conf.stat_index == NB_STATS - 1)? 0 : conf.stat_index + 1;
+  conf.stat_index = (conf.stat_index == NB_STATS - 1) ? 0 : conf.stat_index + 1;
   EEPROM_writeAnything(0, conf);
   readStat();
 }
@@ -213,15 +213,19 @@ void resetAllStats()
 
 void playConfirmMelody()
 {
-  if (true == conf.volume){
+  if (true == conf.volume) {
     toneAC(700, 500);
   }
 }
 
+void resetTimer(unsigned long &timer)
+{
+  timer = millis();
+}
 
 void renderChrono(Stat value = stat)
 {
-  uint16_t s = (value.chrono == 0 && value.chrono_start != 0)? rtc.now().unixtime() - value.chrono_start: value.chrono;
+  uint16_t s = (value.chrono == 0 && value.chrono_start != 0) ? rtc.now().unixtime() - value.chrono_start : value.chrono;
   uint8_t h = floor(s / 3600);
   s -= h * 3600;
   uint8_t m = floor(s / 60);
@@ -238,20 +242,20 @@ void renderChrono(Stat value = stat)
 
 void renderVario()
 {
-  if (true == varioState){
-    
+  if (true == varioState) {
+
+    DateTime now = rtc.now();
     display.clearDisplay();
-    
-    //ALtitude 
+
+    //ALtitude
     display.setTextColor(BLACK);
     display.setTextSize(2);
     display.print((int)Altitude);
     display.setTextSize(1);
     display.print(F("m"));
-    
+
     //Time
-    DateTime now = rtc.now();      
-    display.setCursor(55, 0);  
+    display.setCursor(55, 0);
     renderZero(now.hour());
     display.print(now.hour());
     display.setCursor(66, 0);
@@ -259,28 +263,28 @@ void renderVario()
     display.setCursor(72, 0);
     renderZero(now.minute());
     display.print(now.minute());
-  
+
     //Chrono
     display.setCursor(0, 41);
     display.print(F("M"));
     display.print(conf.stat_index + 1);
     display.print(F(" "));
     renderChrono();
-  
-    if (now.second() % 2 == 0) {   
+
+    if (now.second() % 2 == 0) {
       //Battery level
       uint8_t vccPixels = getVccPixels();
       uint8_t bat_x = 72;
       uint8_t bat_y = 9;
       display.drawRect(bat_x + 2, bat_y, 10, 6, BLACK);
       display.fillRect(bat_x, bat_y + 2, 2, 2, BLACK);
-      display.fillRect(bat_x + 3 + 8 - vccPixels, bat_y + 1, vccPixels, 4, BLACK);   
+      display.fillRect(bat_x + 3 + 8 - vccPixels, bat_y + 1, vccPixels, 4, BLACK);
     }
     else {
       // set up my_temperature
-      display.setCursor(62, 9);      
+      display.setCursor(62, 9);
       bmp085.getTemperature(&my_temperature);
-      display.print((int)my_temperature);      
+      display.print((int)my_temperature);
       display.drawPixel(75, 9, BLACK);
       display.drawPixel(76, 9, BLACK);
       display.drawPixel(74, 10, BLACK);
@@ -288,32 +292,32 @@ void renderVario()
       display.drawPixel(75, 12, BLACK);
       display.drawPixel(76, 12, BLACK);
       display.drawPixel(77, 10, BLACK);
-      display.drawPixel(77, 11, BLACK);      
+      display.drawPixel(77, 11, BLACK);
       display.setCursor(79, 9);
       display.print(F("C"));
     }
-  
-    //Vario    
+
+    //Vario
     display.setTextColor(WHITE, BLACK);
     display.setCursor(48, 24);
-    display.print(F("m/s")); 
+    display.print(F("m/s"));
     display.setTextSize(2);
-    display.setCursor(0, 16);  
-    
+    display.setCursor(0, 16);
+
     float vario_abs = abs(vario);
     display.print((vario <= -0.05) ? F("-") : (vario >= 0.05) ? F("+") : F(" "));
     uint8_t m = floor(vario_abs);
     display.print(m);
     display.print(F("."));
-    display.print(round(10 * vario_abs) - (10 * m));     
+    display.print(round(10 * vario_abs) - (10 * m));
 
     //vario bar
     if (vario >= 0)
       display.fillRect(42, 32, round(abs(vario) * 10), 8, BLACK);
     else
       display.drawRect(42, 32, -round(abs(vario) * 10), 8, BLACK);
-      
-    display.display();    
+
+    display.display();
   }
 }
 
@@ -327,7 +331,7 @@ void renderVolume(bool volume)
   conf.volume = volume;
 
   push_write_eeprom = 0;
-  get_time1 = millis();  //stop the refresh rendering vario
+  resetTimer(get_time1); //stop the refresh rendering vario
 
   display.println(F("Sons:"));
   (false == conf.volume) ? display.print(F("Off")) : display.print(F("On"));
@@ -424,7 +428,7 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
   display.setTextSize(1);
   display.setTextColor(WHITE, BLACK);
 
-  if (newMenuItem.getShortkey() != MENU_LEFT){
+  if (newMenuItem.getShortkey() != MENU_LEFT) {
     if (newMenuItem.getShortkey() < 10)
       display.println(F("Accueil"));
     else if (newMenuItem.getShortkey() >= 10 && newMenuItem.getShortkey() < 20)
@@ -433,15 +437,15 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
       display.println(F("Statistiques"));
   }
 
-  if (newMenuItem.getShortkey() != MENU_STAT){
-    
+  if (newMenuItem.getShortkey() != MENU_STAT) {
+
     display.setTextSize(2);
     display.println(newMenuItem.getName());
-    
+
     if (!menuUsed)
       display.setTextColor(BLACK);
   }
-  
+
   if (varioState == true && menuUsed) {
     varioState = false;
     menuUsed = false;
@@ -538,8 +542,8 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
 
       case MENU_LIGHT:
         {
-          conf.light_cpt = updateConfItem(conf.light_cpt, dir, -1);          
-          
+          conf.light_cpt = updateConfItem(conf.light_cpt, dir, -1);
+
           if  (conf.light_cpt <= 0)
             conf.light_cpt = 0;
 
@@ -571,9 +575,9 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
         break;
 
       case MENU_DATE:
-        {         
+        {
           display.setTextSize(1);
-          
+
           if (menuUsed_last == false) {
 
             menuUsed_last = true;
@@ -600,7 +604,7 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
               else {
                 menuUsed = false;
                 menuUsed_last = true;
-                conf_date_displayed = 0;                
+                conf_date_displayed = 0;
                 rtc.adjust(DateTime(date_year, date_month, date_day, date_hour, date_minute, 0));
                 display.setTextColor(BLACK);
                 renderDateTime(rtc.now());
@@ -656,33 +660,36 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
           }
           else {
 
-            //if (stat_blink_status) {
+            if (!stat_blink_status) {                          
               display.setTextColor(BLACK);
               renderDateTime(DateTime(stat_to_display.chrono_start));
-              display.println();
-            //}
-            //else {
-              
+            }
+            else {
+              display.print(F("M"));
+              display.print(stat_displayed);              
+              display.setTextColor(BLACK);
+            }
+            
+            stat_blink_status = !stat_blink_status;
+            display.println();
+
             display.print(F("Chrono:"));
             renderChrono(stat_to_display);
             display.println();
-            
-            //}
-            //stat_blink_status = !stat_blink_status;
-            
+
             display.print(F("Alt max:"));
             renderStatItem(stat_to_display.alti_max, F("m"), true);
             display.println();
-            
+
             display.print(F("Alt min:"));
             renderStatItem(stat_to_display.alti_min, F("m"), true);
             display.println();
-            
+
             display.print(F("m/s:"));
-            renderStatItem(-(float)stat_to_display.txchutemax/10, F("|"));
-            renderStatItem((float)stat_to_display.txchutemin/10, F(""));
+            renderStatItem(-(float)stat_to_display.txchutemax / 10, F("|"));
+            renderStatItem((float)stat_to_display.txchutemin / 10, F(""));
             display.println();
-            
+
             display.print(F("Cumul:"));
             renderStatItem(round(stat_to_display.cumul_alt), F("m"), true);
             display.println();
@@ -752,7 +759,7 @@ void menuSetup()
   m_options.addRight(m_tare);
   m_tare.addBefore(m_retour);
   m_tare.addAfter(m_qnh);
-  m_qnh.addAfter(m_altitude);  
+  m_qnh.addAfter(m_altitude);
   m_altitude.addAfter(m_montee);
   m_montee.addAfter(m_descente);
   m_descente.addAfter(m_light);
@@ -792,7 +799,7 @@ void menuChangeEvent(MenuChangeEvent changed)
   screen brightness. AnalogWrite values from 0 to 255
 */
 void updateBrightness()
-{  
+{
   analogWrite(PIN_LIGHT, conf.light_cpt * 51);
 }
 
@@ -804,7 +811,7 @@ uint8_t getVccPixels()
   //Serial.println(real_bat);
   average_vcc = (average_vcc == 0) ? real_bat : (int)(average_vcc * 0.94 + real_bat * 0.06);
 
-  uint8_t pixels = map(average_vcc,3100,4100,0,8);
+  uint8_t pixels = map(average_vcc, 3100, 4100, 0, 8);
   if (pixels > 8)
     pixels = 8;
   else if (pixels < 1)
@@ -816,15 +823,15 @@ uint8_t getVccPixels()
 
 uint8_t getBeepLatency(float variation)
 {
-   int latency = 150 - (variation * 30);
-   return (latency < 70)? 70: (latency > 150)? 150: latency;
+  int latency = 150 - (variation * 30);
+  return (latency < 70) ? 70 : (latency > 150) ? 150 : latency;
 }
 
 
 uint16_t getBeepFrequency(float variation)
 {
-   int frequency = 690 + (150 * variation);   
-   return (frequency < 100)? 100: (frequency > 1300)? 1300 :frequency;
+  int frequency = 690 + (150 * variation);
+  return (frequency < 100) ? 100 : (frequency > 1300) ? 1300 : frequency;
 }
 
 
@@ -832,9 +839,9 @@ void updateAltitude(bool reset = false)
 {
   // get a new sensor event
   sensors_event_t event;
-  bmp085.getEvent(&event);  
+  bmp085.getEvent(&event);
   // put it in smooth filter and take average
-  average_pressure = (true == reset)? event.pressure : average_pressure * 0.95 + event.pressure * 0.05;
+  average_pressure = (true == reset) ? event.pressure : average_pressure * 0.95 + event.pressure * 0.05;
   // take new altitude in meters
   Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure) + conf.currentAltitude;
 }
@@ -849,32 +856,32 @@ void resetAltitudeSensor()
 }
 
 /*
-  make some beeps...   
+  make some beeps...
 */
 void makeBeeps()
-{   
-  if (true == conf.volume && (millis() >= (get_timeBeep + beepLatency) || timeNoPauseBeep <= 30))
-  {       
-    get_timeBeep = millis();
-    
-    noSound = (timeNoPauseBeep <= 30)? false: !noSound;
-    
-    if (false == noSound){
-      
+{
+  if (true == conf.volume && (millis() >= (get_timeBeep + beepLatency) || timeNoPauseBeep <= 40))
+  {
+    resetTimer(get_timeBeep);
+
+    noSound = (timeNoPauseBeep <= 40) ? false : !noSound;
+
+    if (false == noSound) {
+
       float varioClimbRateStart = getVarioClimbRateStart();
       float varioSinkRateStart = getVarioSinkRateStart();
-      
+
       //beep even if vario has negative value but vario is climbing
-      float variation = (vario < varioClimbRateStart && vario_diff >= varioClimbRateStart && varioClimbRateStart != 0)? vario_diff: vario;
-            
-      if (timeNoPauseBeep <= 30){ 
+      float variation = (vario < varioClimbRateStart && vario_diff >= varioClimbRateStart && varioClimbRateStart != 0) ? vario_diff : vario;
+
+      if (timeNoPauseBeep <= 40) {
         timeNoPauseBeep++;
-        beepLatency = 150;        
+        beepLatency = 150;
       }
       else {
         beepLatency = getBeepLatency(variation);
       }
-     
+
       if ((vario > varioClimbRateStart && varioClimbRateStart != 0) || (vario < varioSinkRateStart && varioSinkRateStart != 0)) {
         //when climbing make faster and shorter beeps
         //toneAC(getBeepFrequency(variation), 10, beepLatency, true);
@@ -896,11 +903,11 @@ void setup()
   //Serial.begin(9600);
 
   // clear the configuration
-  if (initialisation){
+  if (initialisation) {
     EEPROM_writeAnything(0, conf);
     resetAllStats();
   }
-  
+
   // load the configuration
   EEPROM_readAnything(0, conf);
   readStat();
@@ -922,63 +929,70 @@ void setup()
   display.setTextWrap(false);
   //display.setRotation(0);
 
-  menuSetup();  
+  menuSetup();
   updateBrightness();
 }
 
 
 void loop()
 {
+  readButtons();
+  updateAltitude();
+  
   float tempo = micros();
   
-  readButtons();    
-  updateAltitude();  
+  /* TEST BLOC */
+  //Altitude = alt + 0.05;  
   
   // put it in smooth filter and take average
-  vario = vario * 0.8 + (200000 * ((alt - Altitude) / (tim - tempo)));
-  
-  /* TEST BLOC */  
+  vario = vario * 0.8 + (200000 * ((Altitude - alt) / (tempo - tim)));
+
+  /* TEST BLOC */
   /*
-  vario = vario + 0.01;
+  vario = vario + 0.005;
   if (vario > 4)
     vario = 0;
   */
-  
+
   // Update stats if chrono is running
   if (stat.chrono_start != 0) {
-    
+
     if (vario > 0)
-      stat.cumul_alt += vario * (1000 /(tempo - tim));    
-    
+      stat.cumul_alt += Altitude - alt;
+
     if (Altitude > stat.alti_max)
       stat.alti_max = Altitude;
     if (Altitude < stat.alti_min)
       stat.alti_min = Altitude;
-    
-    int decivario = (int)(vario*10);
+
+    int decivario = (int)(vario * 10);
     if (decivario < -stat.txchutemax)
       stat.txchutemax = -decivario;
     if (decivario > stat.txchutemin)
       stat.txchutemin = decivario;
   }
-  
+
   alt = Altitude;
   tim = tempo;
-  
+
   // make some beeps...
   makeBeeps();
 
   //every second
   if (millis() >= (get_time1 + 1000))
   {
-    get_time1 = millis();
-
+    resetTimer(get_time1);
+    
+    if (menu.getCurrent().getShortkey() == MENU_STAT) {
+      menu.use();
+    }
+    
     // proceedings of the dynamic display of vario
     renderVario();
 
     // diff with previous variometer measurement
     vario_diff = vario - vario_old;
-    vario_old = vario;   
+    vario_old = vario;
 
     // eeprom saves after 5 seconds
     if (push_write_eeprom == 5) {
@@ -998,7 +1012,7 @@ void loop()
       display.setTextColor(BLACK);
       display.setCursor(0, 41);
       display.fillRect(0, 41, 84, 7, WHITE);
-      get_time1 = millis();  //stop the refresh rendering vario
+      resetTimer(get_time1);  //stop the refresh rendering vario
       display.print(F("R.A.Z. stat M"));
       display.print(conf.stat_index + 1);
       display.display();
@@ -1022,7 +1036,7 @@ void loop()
     }
     if (stat.chrono_start != 0 && stat.chrono == 0) {
       // if altitude left in the same "zone" (2 meters) during 15 seconds, the timer is stopped
-      if (altitude_temp - 1 < Altitude && altitude_temp + 1 > Altitude) {
+      if (altitude_temp - 1 <= Altitude && altitude_temp + 1 >= Altitude) {
         chrono_cpt++;
         if (chrono_cpt >= 15) {
           DateTime now = rtc.now();
@@ -1036,9 +1050,9 @@ void loop()
         altitude_temp = Altitude;
       }
     }
-    //correction beep latency 
+    //correction beep latency
     makeBeeps();
-  }    
+  }
   //Serial.println((tempo - micros()));
 }
 
@@ -1053,8 +1067,8 @@ void readButtons()
       if (newKnobPosition > knobPosition) { //Right
         if (!menuUsed && varioState == false) {
           if (menu.getCurrent().getShortkey() == MENU_STAT && stat_displayed < NB_STATS) {
-            get_time1 += 1000;
-            //stat_blink_status = true;
+            resetTimer(get_time1);
+            stat_blink_status = true;
             stat_displayed++;
             renderMenu();
           }
@@ -1069,8 +1083,8 @@ void readButtons()
       else { //Left
         if (!menuUsed && varioState == false) {
           if (menu.getCurrent().getShortkey() == MENU_STAT && stat_displayed > 1) {
-            get_time1 += 1000;
-            //stat_blink_status = true;
+            resetTimer(get_time1);
+            stat_blink_status = true;
             stat_displayed--;
             renderMenu();
           }
@@ -1097,7 +1111,7 @@ void readButtons()
     }
     // in vario, button enter init timer
     else {
-      get_time1 = millis();
+      resetTimer(get_time1);
       is_vario_button_push = true;
     }
   }

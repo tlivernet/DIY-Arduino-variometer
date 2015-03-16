@@ -1021,10 +1021,11 @@ void loop()
 
     // if the altitude out of his "zone", the timer is started
     if (stat.chrono_start == 0) {
-      if (Altitude > altitude_temp + ALTI_TRIGGER || Altitude < altitude_temp - ALTI_TRIGGER) {
+      if (altitude_temp + ALTI_TRIGGER < Altitude || altitude_temp - ALTI_TRIGGER > Altitude) {
         resetStat();
         DateTime now = rtc.now();
         stat.chrono_start = now.unixtime();
+        chrono_cpt = 0;
       }
       else { // every 15 seconds, the altitude "zone" is updated
         chrono_cpt++;
@@ -1035,8 +1036,8 @@ void loop()
       }
     }
     if (stat.chrono_start != 0 && stat.chrono == 0) {
-      // if altitude left in the same "zone" (2 meters) during 15 seconds, the timer is stopped
-      if (altitude_temp - 1 <= Altitude && altitude_temp + 1 >= Altitude) {
+      // if altitude left in the same "zone" (1.5 meters) during 15 seconds, the timer is stopped
+      if (altitude_temp - 0.75 < Altitude && altitude_temp + 0.75 > Altitude) {
         chrono_cpt++;
         if (chrono_cpt >= 15) {
           DateTime now = rtc.now();

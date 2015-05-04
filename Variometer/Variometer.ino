@@ -363,7 +363,7 @@ void renderStatItem(float value, const __FlashStringHelper *unit, bool integer =
   menuUsed = false;
   display.setTextColor(BLACK);
 
-  if (integer == true) {
+  if (true == integer) {
     display.print((int)value);
   }
   else {
@@ -386,7 +386,7 @@ void renderDateTime(DateTime d, uint8_t bold = 0)
     display.setTextColor(WHITE, BLACK);
   renderZero(d.day());
   display.print(d.day());
-
+  
   display.setTextColor(BLACK);
   display.print(F("/"));
 

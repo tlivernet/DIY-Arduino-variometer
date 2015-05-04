@@ -30,6 +30,8 @@ Encoder knob(3, 2);``` par ``` Encoder knob(2, 3);```
 
 [![Youtube - DIY - Variomètre à base d'Arduino nano](http://img.youtube.com/vi/KeNAhEgbHnc/0.jpg)](http://www.youtube.com/watch?v=KeNAhEgbHnc)
 
+[Participer à la discussion sur le forum parapentiste.](http://www.parapentiste.info/forum/bons-plans/variometre-maison-a-base-darduino-t33538.0.html)
+
 
 ### Matériel et coût
 

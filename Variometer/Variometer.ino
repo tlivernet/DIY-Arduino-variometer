@@ -3,8 +3,7 @@
 #include <MenuBackend.h>
 #include <Encoder.h>
 #include <Wire.h>  //i2c library
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BMP085_U.h>
+#include <MS5611.h>
 #include <toneAC.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
@@ -96,7 +95,7 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(PIN_SCLK, PIN_SDIN, PIN_DC, PIN_SCE,
 /////////////////////////////////////////
 
 /////////////////////VARIO/////////////////////////
-Adafruit_BMP085_Unified bmp085 = Adafruit_BMP085_Unified(10085); //set up bmp085 sensor
+MS5611 ms5611; //set up ms5611 sensor
 #define ALTI_TRIGGER 4 //Trigger to start and stop chrono in meter
 float Altitude;
 int altitude_temp;
@@ -284,7 +283,7 @@ void renderVario()
     else {
       // set up my_temperature
       display.setCursor(62, 9);
-      bmp085.getTemperature(&my_temperature);
+      my_temperature = ms5611.readTemperature();
       display.print((int)my_temperature);
       display.drawPixel(75, 9, BLACK);
       display.drawPixel(76, 9, BLACK);
@@ -472,9 +471,7 @@ void renderMenu(MenuItem newMenuItem = menu.getCurrent(), uint8_t dir = 2)
             menuUsed = false;
             display.print(F("Ok"));
 
-            sensors_event_t event;
-            bmp085.getEvent(&event);
-            conf.p0 = event.pressure;
+            conf.p0 = getRealPressure();
 
             //prevent chrono start and beeping
             resetAltitudeSensor();
@@ -838,13 +835,10 @@ uint16_t getBeepFrequency(float variation)
 
 void updateAltitude(bool reset = false)
 {
-  // get a new sensor event
-  sensors_event_t event;
-  bmp085.getEvent(&event);
   // put it in smooth filter and take average
-  average_pressure = (true == reset) ? event.pressure : average_pressure * 0.95 + event.pressure * 0.05;
+  average_pressure = (true == reset) ? getRealPressure() : average_pressure * 0.95 + getRealPressure() * 0.05;
   // take new altitude in meters
-  Altitude = bmp085.pressureToAltitude(conf.p0, average_pressure) + conf.currentAltitude;
+  Altitude = ms5611.getAltitude(average_pressure, conf.p0) + conf.currentAltitude;
 }
 
 
@@ -898,6 +892,11 @@ void makeBeeps()
   }
 }
 
+float getRealPressure()
+{
+  return (float)ms5611.readPressure() / 100.0;  
+}
+
 
 void setup()
 {
@@ -922,7 +921,7 @@ void setup()
 
   pinMode(PIN_LIGHT, OUTPUT);
 
-  bmp085.begin();
+  ms5611.begin();
   resetAltitudeSensor();
 
   display.begin();
@@ -936,11 +935,11 @@ void setup()
 
 
 void loop()
-{
+{ 
+  float tempo = micros();
+  
   readButtons();
   updateAltitude();
-  
-  float tempo = micros();
   
   /* TEST BLOC */
   //Altitude = alt + 0.05;  

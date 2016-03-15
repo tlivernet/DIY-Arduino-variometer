@@ -1,5 +1,8 @@
-DIY Arduino variometer
-==================
+DIY Arduino variometer - with MS5611 Barometric Pressure Sensor
+================
+
+Il s'agit de la version utilisant le capteur de pression MS5611. 
+Vous trouverez une version alternative de ce code supportant le BMP085 sur la branche "[master](https://github.com/sinseman/DIY-Arduino-variometer/tree/master)".
 
 - [Mise à jour](#mise-à-jour)
 - [Présentation](#présentation)
@@ -40,7 +43,7 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 
 - Arduino nano V3.0	| 5,10€
 - Nokia LCD 5110 | 2€
-- BMP085 Digital Barometric Pressure Sensor	| 2,90€
+- MS5611 Barometric Pressure Sensor	| 8€
 - Digital Push Button Switch Rotary Encoder	| 4,20€
 - Mini USB Battery Charging Board 5V | 0,90€
 - Buzzer 8 ohm | 0,20€
@@ -52,7 +55,7 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 - Cables | 3€
 - Plastic Electronics Project Box Enclosure DIY 27x60x100mm | 2,40€
 
-**TOTAL	| 26,85 €**
+**TOTAL	| 31,95 €**
 
 
 ## Schéma

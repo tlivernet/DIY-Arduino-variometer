@@ -1,5 +1,8 @@
-DIY Arduino variometer
+DIY Arduino variometer - with BMP085 Barometric Pressure Sensor
 ==================
+
+Il s'agit de la version utilisant le capteur de pression BMP085. 
+Vous trouverez une version alternative de ce code supportant le MS5611 sur la branche "[MS5611](https://github.com/sinseman/DIY-Arduino-variometer/tree/MS5611)".
 
 - [Mise à jour](#mise-à-jour)
 - [Présentation](#présentation)

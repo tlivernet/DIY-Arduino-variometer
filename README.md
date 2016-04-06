@@ -67,7 +67,7 @@ Voici à titre indicatif le matériel utilisé et leur prix d'achat sur eBay int
 
 Une fois votre montage terminé il faut compiler et téléverser le code sur votre Arduino. Pour cela il vous faudra utiliser l'IDE Arduino.
 
-**Il faut utiliser [au minimum la version 1.5 de l'IDE Arduino](http://arduino.cc/en/main/software#toc3), sinon des erreurs de compilation apparaissent !**
+**Il faut utiliser [une version de l'IDE Arduino >= 1.5 et <= 1.6.1](https://www.arduino.cc/en/Main/OldSoftwareReleases), sinon des erreurs de compilation apparaissent !**
 
 Tout d'abord vous devez installer les librairies fournies avec le projet. Copiez le contenu du dossier librairies dans le dossier librairies de votre installation (par exemple C:\Users\Toto\Documents\Arduino\libraries)
 

@@ -812,7 +812,7 @@ uint8_t getVccPixels()
   //Serial.println(real_bat);
   average_vcc = (average_vcc == 0) ? real_bat : (int)(average_vcc * 0.94 + real_bat * 0.06);
 
-  uint8_t pixels = map(average_vcc, 3100, 4100, 0, 8);
+  uint8_t pixels = map(average_vcc, 3350, 4200, 0, 8);
   if (pixels > 8)
     pixels = 8;
   else if (pixels < 1)

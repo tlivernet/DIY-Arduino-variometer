@@ -14,7 +14,7 @@ BUILD    := build/native
 CORE_SRC := $(wildcard src/core/*.cpp)
 UNITY    := test/support/unity/unity.c
 
-CXXFLAGS := -std=gnu++17 -Wall -Wextra -Werror -O1 -g -Isrc -Itest/support/unity
+CXXFLAGS := -std=gnu++17 -Wall -Wextra -Werror -O1 -g -Isrc -Itest -Itest/support/unity
 # isnan()/isfinite() sont la première ligne de défense du filtre : -ffast-math
 # implique -ffinite-math-only, qui autorise le compilateur à considérer ces
 # tests comme toujours faux et donc à les supprimer. On l'interdit

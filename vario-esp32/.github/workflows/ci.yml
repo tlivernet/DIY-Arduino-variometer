@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  # Tests du coeur métier. Unity est intégré au dépôt (test/support/unity) donc
+  # cette étape ne dépend d'aucun téléchargement : elle tourne partout, y
+  # compris hors ligne.
+  tests:
+    name: Tests natifs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compiler et lancer les suites
+        working-directory: vario-esp32
+        run: make test
+
+  # Compilation pour la cible. C'est précisément ce que le projet de 2017 ne
+  # savait plus faire : il n'était compilable que sur un IDE Arduino de 2015.
+  firmware:
+    name: Firmware ESP32-S3
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-${{ runner.os }}-${{ hashFiles('vario-esp32/platformio.ini') }}
+
+      - name: Installer PlatformIO
+        run: pip install --upgrade platformio
+
+      - name: Compiler
+        working-directory: vario-esp32
+        run: pio run -e esp32s3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: vario-esp32/.pio/build/esp32s3/firmware.bin
+
+  format:
+    name: Style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier le formatage
+        working-directory: vario-esp32
+        run: |
+          find src test -name '*.cpp' -o -name '*.h' \
+            | grep -v test/support/unity \
+            | xargs clang-format --dry-run --Werror

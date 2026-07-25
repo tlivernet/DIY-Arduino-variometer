@@ -1,6 +1,14 @@
 DIY Arduino variometer - with BMP085 Barometric Pressure Sensor
 ==================
 
+> ### 🚧 Une refonte moderne est en cours : [`vario-esp32/`](vario-esp32/)
+>
+> Ce projet de 2014-2017 reste utilisable, mais il ne compile que sur l'IDE Arduino 1.5-1.6.1 et ses composants (BMP085, DS1307, Nokia 5110) ne se trouvent plus.
+>
+> Une refonte complète sur **ESP32-S3** est engagée dans le dossier [`vario-esp32/`](vario-esp32/) : écran Sharp Memory LCD 400×240, vario compensé en accélération par filtre de Kalman, liaison BLE vers XCTrack, PCB KiCad et boîtier imprimé en 3D, pour ~42 €. Le cœur métier y est déjà porté et couvert par 70 tests, dont un test de non-régression par bug identifié dans la version ci-dessous.
+>
+> Le code AVR historique de cette page n'est pas modifié.
+
 Il s'agit de la version utilisant le capteur de pression BMP085. 
 Vous trouverez une version alternative de ce code supportant le MS5611 sur la branche "[MS5611](https://github.com/sinseman/DIY-Arduino-variometer/tree/MS5611)".
 

@@ -1,0 +1,12 @@
+# Table de partitions pour ESP32-S3 avec 4 Mo de flash.
+#
+# Pas de partition OTA : on flashe par USB natif, et la place ainsi gagnée va
+# au journal de vol LittleFS et aux fichiers de l'IHM web. Une carte 8 ou
+# 16 Mo permettrait d'avoir les deux (OTA + gros journal) ; dans ce cas
+# utiliser une table à deux emplacements applicatifs.
+#
+# Nom,      Type, SousType, Offset,   Taille,
+nvs,        data, nvs,      0x9000,   0x5000,
+phy_init,   data, phy,      0xE000,   0x1000,
+factory,    app,  factory,  0x10000,  0x280000,
+littlefs,   data, spiffs,   0x290000, 0x160000,

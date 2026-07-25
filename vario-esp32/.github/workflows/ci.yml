@@ -19,6 +19,17 @@ jobs:
         working-directory: vario-esp32
         run: make test
 
+      # Rend les écrans en PNG et les publie : une régression de mise en page
+      # se constate à l'œil dans les artefacts de la CI.
+      - name: Rendre les écrans
+        working-directory: vario-esp32
+        run: make render
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ecrans
+          path: vario-esp32/build/screens/*.png
+
   # Compilation pour la cible. C'est précisément ce que le projet de 2017 ne
   # savait plus faire : il n'était compilable que sur un IDE Arduino de 2015.
   firmware:

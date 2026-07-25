@@ -11,7 +11,7 @@
 CXX      ?= g++
 BUILD    := build/native
 
-CORE_SRC := $(wildcard src/core/*.cpp)
+CORE_SRC := $(wildcard src/core/*.cpp) $(wildcard src/ui/*.cpp)
 UNITY    := test/support/unity/unity.c
 
 CXXFLAGS := -std=gnu++17 -Wall -Wextra -Werror -O1 -g -Isrc -Itest -Itest/support/unity
@@ -26,7 +26,7 @@ UNITY_FLAGS := -std=gnu++17 -O1 -g -Itest/support/unity -w
 
 SUITES := $(notdir $(wildcard test/test_*))
 
-.PHONY: test clean $(addprefix test-,$(SUITES))
+.PHONY: test clean render golden $(addprefix test-,$(SUITES))
 
 test: $(addprefix test-,$(SUITES))
 	@echo ""
@@ -50,3 +50,25 @@ $(foreach suite,$(SUITES),$(eval $(call SUITE_RULE,$(suite))))
 
 clean:
 	rm -rf build
+
+# Rend les écrans dans build/screens/*.png, pour vérifier la mise en page sans
+# écran physique.
+render: $(BUILD)/render_screens
+	@mkdir -p build/screens
+	@$(BUILD)/render_screens build/screens
+	@python3 tools/pbm2png.py build/screens
+	@echo "PNG dans build/screens/"
+
+$(BUILD)/render_screens: tools/render_screens.cpp $(CORE_SRC)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+# Regénère les images de référence des tests de rendu. À ne lancer qu'après
+# avoir REGARDÉ l'image obtenue et validé le changement de mise en page.
+golden: $(BUILD)/make_golden
+	@mkdir -p test/golden
+	@$(BUILD)/make_golden test/golden
+
+$(BUILD)/make_golden: tools/make_golden.cpp $(CORE_SRC)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@

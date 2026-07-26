@@ -10,18 +10,19 @@
 | Cœur métier (`src/core`, `src/ui`) | **166 tests exécutés**, tous verts |
 | Rendu des écrans | **exécuté**, images comparées à des références |
 | Syntaxe de `src/hal` et `src/app` | **vérifiée** contre des talons Arduino/ESP-IDF |
-| Compilation pour l'ESP32-S3 | **non vérifiée** — voir ci-dessous |
+| Compilation pour l'ESP32-S3 | **vérifiée** — RAM 9,9 %, flash 12,2 % |
 | Fonctionnement des pilotes | **non vérifié** |
 
-La compilation pour la cible n'a pas pu être faite : le registre PlatformIO n'était pas joignable depuis l'environnement de développement. Le contrôle de syntaxe (`make hal-syntax`) attrape les fautes de frappe et les erreurs de types, mais **pas** les divergences entre les talons et les vraies signatures de l'ESP-IDF, qui changent entre versions majeures.
+Le firmware compile désormais pour la cible, sur Arduino-ESP32 2.0.17 et PlatformIO espressif32 6.12 :
 
-Première chose à faire, donc :
-
-```bash
-pio run -e esp32s3
+```
+RAM :    9,9 %  (32 340 / 327 680 octets)
+Flash : 12,2 % (320 429 / 2 621 440 octets)
 ```
 
-Les erreurs les plus probables concernent l'API LEDC, dont les noms ont bougé entre Arduino-ESP32 v2 et v3, et `esp_rom_gpio_connect_out_signal`, dont l'en-tête a changé de place.
+Il reste donc largement de quoi ajouter le Wi-Fi et le BLE, qui coûteront ~1 Mo de flash et ~100 Ko de RAM.
+
+Deux erreurs ont été nécessaires pour y arriver, toutes deux invisibles au contrôle sur talons puisqu'elles relevaient de la **configuration** et non de la syntaxe : l'absence de `build_unflags = -std=gnu++11`, qui faisait compiler en C++11, et deux en-têtes manquants. Un `static_assert` dans `core/clock.h` rattrape désormais le premier cas avec un message explicite.
 
 ## 1. Le calculateur seul
 

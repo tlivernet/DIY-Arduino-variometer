@@ -8,7 +8,7 @@ Chaque étape est livrable et vérifiable indépendamment.
 | **P1** | Filtre de Kalman, estimation d'assiette, inhibition du son, jeux de données synthétiques | ✅ fait |
 | **P2** | Couche d'affichage 400×240, quatre écrans, tests par images de référence | ✅ fait |
 | **P3** | Journal de vol, table de schéma des réglages, trames LK8EX1, boutons | ✅ fait |
-| **P4** | Pilotes matériel : MS5611, centrale inertielle, écran Sharp, son, boutons. Tâches FreeRTOS | à venir |
+| **P4** | Pilotes matériel : MS5611, centrale inertielle, écran Sharp, son, boutons. Tâches FreeRTOS | ✅ écrit et **compile** |
 | **P5** | Harnais de rejeu : enregistrement des trames brutes en USB, rejeu en test | à venir |
 | **P6** | Portail Wi-Fi de configuration, BLE vers XCTrack | à venir |
 | **P7** | Circuit imprimé KiCad et sorties de fabrication | à venir |

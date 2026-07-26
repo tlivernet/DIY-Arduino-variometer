@@ -5,6 +5,8 @@ Refonte complète du [variomètre DIY sur Arduino Nano](../README.md) de 2014-20
 > **État : le coeur logiciel est terminé et testé — 166 tests.** Les pilotes matériel, le PCB et le boîtier arrivent aux étapes suivantes (voir [Feuille de route](#feuille-de-route)). **Rien de tout ceci n'a encore volé.**
 >
 > Documentation : `mkdocs serve` (ou voir `docs/`). Écrans rendus : `make render`.
+>
+> Le firmware **compile** pour l'ESP32-S3 (RAM 9,9 %, flash 12,2 %), mais aucun pilote n'a encore tourné sur du matériel.
 
 ## Pourquoi une refonte
 
@@ -134,7 +136,7 @@ Le bipeur qui bavarde à l'arrêt, principal défaut d'usage de l'ancien vario, 
 | P1 | Filtre de Kalman, assiette, inhibition du son, jeux synthétiques | **fait** |
 | P2 | Couche d'affichage 400×240, 4 écrans, tests par images de référence | **fait** |
 | P3 | Journal de vol, schéma de config, LK8EX1, boutons | **fait** |
-| P4 | Pilotes MS5611, IMU, écran Sharp, audio LEDC ; tâches FreeRTOS | à venir |
+| P4 | Pilotes MS5611, IMU, écran Sharp, audio LEDC ; tâches FreeRTOS | **écrit, compile** |
 | P5 | Harnais de rejeu (trames brutes en USB → CSV → test) | à venir |
 | P6 | Portail Wi-Fi de configuration + BLE vers XCTrack | à venir |
 | P7 | PCB KiCad + gerbers JLCPCB | à venir |

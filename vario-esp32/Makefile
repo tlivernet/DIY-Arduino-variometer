@@ -26,7 +26,7 @@ UNITY_FLAGS := -std=gnu++17 -O1 -g -Itest/support/unity -w
 
 SUITES := $(notdir $(wildcard test/test_*))
 
-.PHONY: test clean render golden $(addprefix test-,$(SUITES))
+.PHONY: test clean render golden hal-syntax $(addprefix test-,$(SUITES))
 
 test: $(addprefix test-,$(SUITES))
 	@echo ""
@@ -72,3 +72,22 @@ golden: $(BUILD)/make_golden
 $(BUILD)/make_golden: tools/make_golden.cpp $(CORE_SRC)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@
+
+# Contrôle de syntaxe de la couche matérielle.
+#
+# Compile src/hal et src/app contre des talons Arduino/ESP-IDF minimaux (voir
+# test/support/arduino_stubs/README.md). Cela attrape les fautes de frappe et les
+# incohérences de types, mais NE PROUVE PAS que le firmware se compile pour la
+# cible : les signatures réelles de l'IDF peuvent différer des talons. La seule
+# vérification qui compte reste `pio run -e esp32s3`.
+HAL_SRC := $(wildcard src/hal/*.cpp) $(wildcard src/app/*.cpp) src/main.cpp
+STUBS   := test/support/arduino_stubs
+
+hal-syntax:
+	@mkdir -p $(BUILD)/hal
+	@echo 'HardwareSerial Serial; TwoWire Wire;' > $(BUILD)/hal/stub_globals.cpp
+	@sed -i '1i #include <Arduino.h>\n#include <Wire.h>' $(BUILD)/hal/stub_globals.cpp
+	$(CXX) -std=gnu++17 -Wall -Wextra -Werror -fsyntax-only \
+	    -fno-fast-math -fno-finite-math-only \
+	    -Isrc -I$(STUBS) $(HAL_SRC)
+	@echo "Couche materielle : syntaxe OK (ne remplace pas pio run -e esp32s3)."

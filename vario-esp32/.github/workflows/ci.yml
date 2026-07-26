@@ -19,6 +19,13 @@ jobs:
         working-directory: vario-esp32
         run: make test
 
+      # Contrôle de syntaxe de la couche matérielle contre des talons. Ne
+      # remplace pas la compilation pour la cible, mais attrape les fautes de
+      # frappe sans attendre le téléchargement du toolchain ESP32.
+      - name: Vérifier la syntaxe de la couche matérielle
+        working-directory: vario-esp32
+        run: make hal-syntax
+
       # Rend les écrans en PNG et les publie : une régression de mise en page
       # se constate à l'œil dans les artefacts de la CI.
       - name: Rendre les écrans

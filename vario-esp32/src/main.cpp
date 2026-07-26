@@ -1,75 +1,44 @@
-// Point d'entrée du firmware — étape P0.
+// Point d'entrée du firmware.
 //
-// À ce stade le dépôt ne contient que le coeur métier (src/core), qui est du
-// C++ pur et couvert par les tests natifs. Les pilotes matériel (MS5611, IMU,
-// écran Sharp, audio LEDC, boutons) et les tâches FreeRTOS arrivent à l'étape
-// P1 : voir README.md.
-//
-// Ce main sert donc uniquement à vérifier que le coeur se compile bien pour la
-// cible ESP32-S3 en plus de la machine de développement, et à donner un signe
-// de vie sur le port série.
+// setup() assemble l'appareil et crée les tâches ; loop() ne fait que de
+// l'entretien. Toute la logique vit dans les tâches, et le domaine métier dans
+// src/core, qui ne dépend ni d'Arduino ni de l'ESP32 et se teste sur PC.
 
 #include <Arduino.h>
 
-#include "core/battery.h"
-#include "core/flight_fsm.h"
-#include "core/format.h"
-#include "core/isa.h"
-#include "core/stats.h"
-#include "core/tone_scheduler.h"
-#include "core/vario_filter.h"
+#include "app/vario_app.h"
 
 namespace {
-
-vario::VarioFilter g_filter;
-vario::ToneScheduler g_tones;
-vario::FlightDetector g_flight;
-
-// Horloge monotone en microsecondes. esp_timer_get_time() renvoie un int64_t
-// et ne déborde pas (~292 000 ans), contrairement au micros() sur 32 bits du
-// montage AVR qui repassait à zéro toutes les 71,6 minutes.
-vario::Micros nowMicros() {
-  return static_cast<vario::Micros>(esp_timer_get_time());
+vario::app::VarioApp g_app;
 }
-
-}  // namespace
 
 void setup() {
   Serial.begin(115200);
   delay(200);
+  Serial.println(F("Variometre ESP32-S3"));
 
-  Serial.println(F("Variometre ESP32-S3 - etape P0 (coeur metier uniquement)"));
-  Serial.print(F("Altitude a 1013.25 hPa / 900 hPa : "));
-  Serial.println(vario::pressureToAltitude(1013.25f, 900.0f));
-
-  g_filter.reset(1013.25f, 1013.25f, 0.0f, nowMicros());
-  g_flight.reset(g_filter.altitudeM(), nowMicros());
+  if (!g_app.begin()) {
+    // On ne s'arrête pas : l'écran doit pouvoir afficher le défaut, et le reste
+    // de l'appareil rester utilisable.
+    Serial.println(F("ATTENTION : un capteur n'a pas repondu"));
+  }
 }
 
 void loop() {
-  // Pas encore de capteur : on rejoue la pression de référence pour montrer
-  // que la chaîne tourne sans produire de NaN. Remplacé par la lecture du
-  // MS5611 à l'étape P1.
-  const vario::Micros now = nowMicros();
-  g_filter.update(1013.25f, 1013.25f, 0.0f, now);
+  // Les tâches font le travail. Ici, seulement du diagnostic sur le port série,
+  // une fois par seconde.
+  static std::uint32_t last_report_ms = 0;
+  const std::uint32_t now_ms = millis();
 
-  const vario::ToneOutput tone = g_tones.update(g_filter.varioMs(), now);
-  g_flight.update(g_filter.altitudeM(), now);
+  if (now_ms - last_report_ms >= 1000) {
+    last_report_ms = now_ms;
 
-  static vario::Micros last_report = 0;
-  if (now - last_report >= vario::kMicrosPerSecond) {
-    last_report = now;
-
-    char vario_text[8];
-    vario::formatVarioTo(vario_text, sizeof(vario_text), g_filter.varioMs());
-
-    Serial.print(F("alt="));
-    Serial.print(g_filter.altitudeM(), 1);
-    Serial.print(F(" m  vario="));
-    Serial.print(vario_text);
-    Serial.print(F(" m/s  son="));
-    Serial.println(tone.sounding ? F("oui") : F("non"));
+    vario::app::VarioState state;
+    if (g_app.latestState(state)) {
+      Serial.printf("alt=%.1f m  vario=%+.2f m/s  p=%.2f hPa  t=%.1f C  son=%s\n",
+                    state.altitude_m, state.vario_display_ms, state.pressure_hpa,
+                    state.temperature_c, state.audio_muted ? "coupe" : "actif");
+    }
   }
-
-  delay(10);
+  delay(50);
 }

@@ -2,7 +2,9 @@
 
 Refonte complète du [variomètre DIY sur Arduino Nano](../README.md) de 2014-2017, pour du matériel sourçable en 2026 et une chaîne de développement qui fonctionne encore dans dix ans.
 
-> **État : étape P0.** Seul le coeur métier existe, entièrement testé. Les pilotes matériel, le PCB et le boîtier arrivent aux étapes suivantes (voir [Feuille de route](#feuille-de-route)). **Rien de tout ceci n'a encore volé.**
+> **État : le coeur logiciel est terminé et testé — 166 tests.** Les pilotes matériel, le PCB et le boîtier arrivent aux étapes suivantes (voir [Feuille de route](#feuille-de-route)). **Rien de tout ceci n'a encore volé.**
+>
+> Documentation : `mkdocs serve` (ou voir `docs/`). Écrans rendus : `make render`.
 
 ## Pourquoi une refonte
 
@@ -21,14 +23,31 @@ Le coeur métier, en C++17 pur — aucune dépendance à Arduino, donc compilabl
 |---|---|
 | `core/isa` | conversion pression → altitude (atmosphère standard), QNH borné |
 | `core/vario_filter` | lissage pression + dérivée, coefficients indépendants de la cadence |
+| `core/attitude` | estimation d'assiette 6 axes, **compensation centrifuge** |
+| `core/kalman` | filtre à 3 états (altitude, vitesse, biais), garde de divergence |
+| `core/audio_gate` | inhibition du son pendant la convergence au démarrage |
 | `core/tone_law` | lois hauteur/durée des bips, profils « classique » et « moderne » |
 | `core/tone_scheduler` | machine à états du bipeur : amorce continue, note, pause, hystérésis |
 | `core/flight_fsm` | détection automatique décollage / atterrissage |
 | `core/stats` | statistiques de vol (extrema, gain cumulé) |
+| `core/flight_log` | journal en ajout seul, enregistrements de 64 octets + CRC16 |
+| `core/config_schema` | table de schéma pilotant NVS, menu embarqué et IHM web |
+| `core/lk8ex1` | trames LK8EX1 pour XCTrack / XCSoar |
+| `core/buttons` | machine à états des trois boutons (anti-rebond, appui long, répétition) |
 | `core/battery` | jauge de batterie 1S |
 | `core/format` | mise en forme de la vitesse verticale |
+| `ui/canvas` | tampon 1 bit, primitives, suivi des lignes modifiées |
+| `ui/segment` | chiffres à sept segments, de taille libre |
+| `ui/screens` | écrans vario, calibration, statistiques, menu |
 
-**70 tests** répartis en 7 suites, dont un test de non-régression nommé pour chacun des dix bugs de la version AVR.
+**166 tests** répartis en 14 suites, dont un test de non-régression nommé pour chacun des dix bugs de la version AVR.
+
+### Testé sans matériel
+
+Deux techniques rendent l'essentiel vérifiable sur un PC :
+
+- **trajectoires synthétiques** — accéléromètre, gyromètre et pression dérivés d'une même vérité terrain. Le jeu décisif est le virage coordonné établi : vitesse verticale vraie nulle mais facteur de charge de `g/cos φ`, situation où un vario naïf annonce une fausse montée de 1,5 m/s ;
+- **images de référence** — les écrans sont rendus puis comparés octet par octet à des PBM versionnés.
 
 ## Compiler et tester
 
@@ -37,7 +56,13 @@ Le coeur métier, en C++17 pur — aucune dépendance à Arduino, donc compilabl
 make test
 
 # Une seule suite
-make test-test_flight_fsm
+make test-test_kalman
+
+# Rendre les écrans dans build/screens/*.png
+make render
+
+# Regénérer les images de référence (après un changement de mise en page ASSUMÉ)
+make golden
 
 # Firmware embarqué (nécessite PlatformIO)
 pio run -e esp32s3
@@ -54,7 +79,8 @@ pio run -e esp32s3
 | IMU | 6 axes, pour le vario compensé en accélération | 2 € |
 | Écran | Sharp Memory LCD LS027B7DH01, 400×240 | 18 € |
 | Audio | piezo large bande + tampon 5 V | 1 € |
-| Commande | 3 boutons étanches | 1 € |
+| Commande | 3 boutons étanches (gants) | 1 € |
+| Horloge | DS3231SN + pile de sauvegarde | 1,5 € |
 | Énergie | LiPo 1S 1500 mAh + charge USB-C | 6 € |
 | Divers + PCB + PETG | | 5 € |
 | **Total** | | **≈ 42 €** |
@@ -87,7 +113,7 @@ Chaque ligne correspond à un test de non-régression nommé dans `test/`.
 | 7 | QNH non borné → `pow(x/0,…)` → altitude NaN définitive | `test_qnh_is_clamped` |
 | 8 | Report de retenue : 1,96 m/s affiché « 1.10 » | `test_rounding_carry_does_not_produce_ten` |
 | 9 | Gain cumulé intégrant le bruit, puis débordement | `test_noise_does_not_inflate_cumulative_gain` |
-| 10 | Offsets EEPROM par `sizeof` de struct (diffèrent AVR/ESP32) | remplacé par NVS clé-valeur (P8) |
+| 10 | Offsets EEPROM par `sizeof` de struct (diffèrent AVR/ESP32) | `test_qnh_is_clamped_by_the_schema` |
 
 Le bipeur qui bavarde à l'arrêt, principal défaut d'usage de l'ancien vario, est verrouillé par `test_hysteresis_prevents_chatter_at_threshold`.
 
@@ -96,12 +122,14 @@ Le bipeur qui bavarde à l'arrêt, principal défaut d'usage de l'ancien vario, 
 | Étape | Contenu | État |
 |---|---|---|
 | P0 | Squelette, CI, coeur métier + tests de non-régression | **fait** |
-| P1 | Pilotes MS5611, écran Sharp, audio LEDC, boutons ; tâches FreeRTOS | à venir |
-| P2 | IMU + filtre de Kalman, inhibition du son pendant la convergence | à venir |
-| P3 | Portail Wi-Fi de configuration + BLE LK8EX1 | à venir |
-| P4 | PCB KiCad + gerbers JLCPCB | à venir |
-| P5 | Boîtier paramétrique OpenSCAD | à venir |
-| P6 | Site de documentation, BOM, guide de montage | à venir |
+| P1 | Filtre de Kalman, assiette, inhibition du son, jeux synthétiques | **fait** |
+| P2 | Couche d'affichage 400×240, 4 écrans, tests par images de référence | **fait** |
+| P3 | Journal de vol, schéma de config, LK8EX1, boutons | **fait** |
+| P4 | Pilotes MS5611, IMU, écran Sharp, audio LEDC ; tâches FreeRTOS | à venir |
+| P5 | Harnais de rejeu (trames brutes en USB → CSV → test) | à venir |
+| P6 | Portail Wi-Fi de configuration + BLE vers XCTrack | à venir |
+| P7 | PCB KiCad + gerbers JLCPCB | à venir |
+| P8 | Boîtier paramétrique OpenSCAD | à venir |
 
 ## Antériorité à consulter
 

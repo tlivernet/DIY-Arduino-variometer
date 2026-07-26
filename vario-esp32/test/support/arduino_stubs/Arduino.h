@@ -24,7 +24,6 @@ inline void delayMicroseconds(unsigned int) {}
 inline unsigned long millis() { return 0; }
 inline std::uint32_t analogReadMilliVolts(int) { return 0; }
 inline void analogSetPinAttenuation(int, int) {}
-inline std::int64_t esp_timer_get_time() { return 0; }
 
 class HardwareSerial {
  public:

@@ -1,6 +1,7 @@
 #include "hal/audio_ledc.h"
 
 #include <Arduino.h>
+#include <driver/gpio.h>
 #include <driver/ledc.h>
 #include <esp_rom_gpio.h>
 #include <soc/gpio_sig_map.h>

@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <esp_timer.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <freertos/task.h>

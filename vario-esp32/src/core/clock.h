@@ -2,6 +2,23 @@
 
 #include <cstdint>
 
+// Garde-fou sur la version du langage.
+//
+// Sans lui, une compilation en C++11 échoue avec des dizaines de messages
+// « no matching function for call to ToneOutput::ToneOutput(...) » qui ne
+// mentionnent jamais la version du langage : en C++11, une structure dotée
+// d'initialiseurs de membres par défaut n'est pas un agrégat, donc toute
+// initialisation de la forme ToneOutput{true, 690} est interprétée comme un
+// appel de constructeur.
+//
+// Le cas se produit pour de bon : le coeur Arduino-ESP32 ajoute -std=gnu++11
+// APRÈS nos options, et gcc retient le dernier -std. D'où la nécessité de
+// build_unflags dans platformio.ini. Ce contrôle rend l'oubli explicite.
+static_assert(__cplusplus >= 201703L,
+              "Ce projet exige C++17. Si la compilation echoue ici, le "
+              "-std=gnu++17 a ete ecrase : verifier build_unflags = -std=gnu++11 "
+              "dans platformio.ini.");
+
 namespace vario {
 
 // Temps monotone en microsecondes.

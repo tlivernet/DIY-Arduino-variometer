@@ -26,6 +26,12 @@ jobs:
         working-directory: vario-esp32
         run: make hal-syntax
 
+      # Une nomenclature qui part chez un distributeur avec une référence vide
+      # ou un repère dupliqué coûte une commande ratée.
+      - name: Valider les nomenclatures
+        working-directory: vario-esp32
+        run: python3 tools/bom_check.py
+
       # Rend les écrans en PNG et les publie : une régression de mise en page
       # se constate à l'œil dans les artefacts de la CI.
       - name: Rendre les écrans

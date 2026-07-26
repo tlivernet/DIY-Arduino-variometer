@@ -8,6 +8,20 @@ Servir à la fois « clé en main » et « esprit DIY » demande deux niveaux de
 
 **Variante B — intégrée.** Un seul circuit imprimé deux couches portant un module ESP32-S3-WROOM-1, le baromètre, la centrale inertielle et le chargeur, tous en composants montés en surface, assemblé par JLCPCB. C'est le « produit fini », repoussé en fin de projet.
 
+## Fichiers de nomenclature
+
+Deux fichiers dans [`hardware/bom/`](https://github.com/tlivernet/DIY-Arduino-variometer/tree/master/vario-esp32/hardware/bom) :
+
+- `bom-composants.csv` — composants unitaires de la variante B, **à téléverser sur Octopart, TrustedParts ou FindChips** pour obtenir stock, prix et délais réels ;
+- `bom-modules.csv` — modules de la variante A, qui ne se résolvent pas chez les distributeurs agréés et servent de simple liste de courses.
+
+```bash
+make bom   # valide et produit les fichiers réduits à téléverser
+```
+
+!!! warning "Les références n'ont pas été vérifiées en direct"
+    Elles ont été choisies pour être des pièces réelles et couramment distribuées, mais ni le stock, ni le prix, ni le délai, ni même l'exactitude de chaque suffixe n'ont été contrôlés. C'est exactement ce que ces outils savent faire : téléverse le fichier et lis leur réponse. Trois lignes sont d'ailleurs explicitement marquées à vérifier.
+
 ## Nomenclature de la variante A
 
 | Poste | Référence | Prix indicatif |
@@ -78,6 +92,6 @@ Ce sont eux qui décident si un montage vole ou non.
 
 **Imprimer en PETG, pas en PLA.** Un boîtier noir au soleil au déchaussement dépasse facilement 60 °C, température à laquelle le PLA ramollit.
 
-**Prévoir un tampon 5 V pour le son.** Le `toneAC` de l'AVR délivrait 10 V crête à crête aux bornes du piezo. Deux sorties ESP32 en push-pull n'en donnent que 6,6, soit environ 3,6 dB de moins — sur le critère le plus important d'un vario, être audible dans le bruit du vent. Une porte logique alimentée en 5 V (74HCT2G34 ou SN74LVC2G17, 0,15 € et 2 mm²) rétablit les 10 V.
+**Prévoir un tampon 5 V pour le son.** Le `toneAC` de l'AVR délivrait 10 V crête à crête aux bornes du piezo. Deux sorties ESP32 en push-pull n'en donnent que 6,6, soit environ 3,6 dB de moins — sur le critère le plus important d'un vario, être audible dans le bruit du vent. Une porte logique alimentée en 5 V rétablit les 10 V pour 0,15 € et 2 mm². Elle doit impérativement être de la famille **HCT**, à seuils TTL : un `74HCT2G34` en 5 V a un seuil haut à 2 V, donc une sortie 3,3 V de l'ESP32 le commande sans problème. Un `74LVC` en 5 V aurait un seuil haut à 3,5 V et ne conviendrait pas. Repli très largement stocké si besoin : `SN74HCT125` en SOIC-14.
 
 **Mesurer la batterie sur ADC1 uniquement.** L'ADC2 de l'ESP32 est inutilisable quand le Wi-Fi est actif. Diviseur 2:1 et lecture calibrée par les eFuse — le `4.89 * analogRead()` de l'AVR n'est pas transposable. Mieux encore, une jauge de charge dédiée supprime le problème et sa calibration.

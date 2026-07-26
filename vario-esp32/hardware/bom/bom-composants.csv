@@ -1,0 +1,29 @@
+Designator,Quantity,Manufacturer,MPN,Description,Package,Fonction,Confiance MPN
+U1,1,Espressif Systems,ESP32-S3-WROOM-1-N8R2,"Module Wi-Fi/BLE ESP32-S3, 8 Mo flash, 2 Mo PSRAM",Module SMD,Calculateur,haute
+U2,1,TE Connectivity,MS5611-01BA03,"Capteur de pression barometrique 10-1200 mbar, resolution 10 cm",QFN-8,Barometre,haute
+U3,1,STMicroelectronics,LSM6DS3TR-C,"Centrale inertielle 6 axes, accelerometre + gyrometre",LGA-14,Assiette,haute
+U4,1,Analog Devices,DS3231SN#,"Horloge temps reel I2C a quartz compense en temperature, +/-2 ppm",SOIC-16,Horloge,haute
+U5,1,Microchip Technology,MCP73831T-2ACI/OT,"Chargeur LiPo 1 cellule, courant reglable",SOT-23-5,Charge batterie,haute
+U6,1,Texas Instruments,TPS61023DBVR,"Convertisseur elevateur 5 V 1 A, entree 0.5-4.4 V",SOT-23-6,Rail 5 V (ecran + audio),haute
+U7,1,Texas Instruments,TLV75733PDBVR,"Regulateur lineaire 3.3 V 1 A a faible chute",SOT-23-5,Rail 3.3 V,haute
+U8,1,Nexperia,74HCT2G34GV125,"Double tampon non inverseur, seuils TTL, alimente en 5 V",TSSOP-8,Tampon audio push-pull,A VERIFIER
+DS1,1,Sharp,LS027B7DH01,"Ecran Memory LCD 2.7 pouces 400x240 reflechissant",Module + nappe FPC,Affichage,haute
+J1,1,GCT,USB4105-GF-A,"Embase USB-C 16 broches, montage traversant/CMS",USB-C,Charge et liaison serie,haute
+J2,1,JST,S2B-PH-K-S,"Embase 2 voies pas 2.0 mm, coudee",PH 2 voies,Batterie,haute
+J3,1,Hirose,FH34SRJ-10S-0.5SH(50),"Connecteur FPC 10 voies pas 0.5 mm, ZIF",FPC-10,Nappe ecran,A VERIFIER
+LS1,1,Murata,7BB-20-6L0,"Disque piezoelectrique 20 mm large bande",Disque 20 mm,Buzzer,A VERIFIER
+SW1,1,C&K,PTS645SM43SMTR92LFS,"Bouton tactile 6x6 mm, hauteur 4.3 mm",CMS 6x6,Bouton HAUT,haute
+SW2,1,C&K,PTS645SM43SMTR92LFS,"Bouton tactile 6x6 mm, hauteur 4.3 mm",CMS 6x6,Bouton VALIDER,haute
+SW3,1,C&K,PTS645SM43SMTR92LFS,"Bouton tactile 6x6 mm, hauteur 4.3 mm",CMS 6x6,Bouton BAS,haute
+SW4,1,C&K,JS102011SAQN,"Interrupteur a glissiere SPDT",CMS,Marche/arret,haute
+BAT2,1,Seiko Instruments,MS412FE-FL26E,"Accumulateur lithium rechargeable 1 mAh",CMS,Sauvegarde horloge,haute
+L1,1,Murata,DFE252012F-2R2M=P2,"Inductance de puissance 2.2 uH 3.0 A",2520 metrique,Inductance elevateur,haute
+C1,6,Samsung Electro-Mechanics,CL10B104KB8NNNC,"Condensateur ceramique 100 nF 50 V X7R",0603,Decouplage,haute
+C7,4,Samsung Electro-Mechanics,CL10A106MQ8NNNC,"Condensateur ceramique 10 uF 6.3 V X5R",0603,Decouplage energie,haute
+C11,2,Murata,GRM188R60J226MEA0D,"Condensateur ceramique 22 uF 6.3 V X5R",0603,Filtrage elevateur,haute
+C13,2,Samsung Electro-Mechanics,CL10A105KB8NNNC,"Condensateur ceramique 1 uF 50 V X5R",0603,Filtrage regulateur,haute
+R1,2,Yageo,RC0603FR-0710KL,"Resistance 10 kOhm 1% 0.1 W",0603,Tirage au plus I2C,haute
+R3,2,Yageo,RC0603FR-07100KL,"Resistance 100 kOhm 1% 0.1 W",0603,Diviseur mesure batterie,haute
+R5,1,Yageo,RC0603FR-072KL,"Resistance 2 kOhm 1% 0.1 W",0603,Reglage courant de charge 500 mA,haute
+R6,2,Yageo,RC0603FR-075K1L,"Resistance 5.1 kOhm 1% 0.1 W",0603,Tirage au moins CC1/CC2 USB-C,haute
+R8,2,Yageo,RC0603FR-071KL,"Resistance 1 kOhm 1% 0.1 W",0603,Serie boutons,haute

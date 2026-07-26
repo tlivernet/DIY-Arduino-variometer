@@ -26,7 +26,7 @@ UNITY_FLAGS := -std=gnu++17 -O1 -g -Itest/support/unity -w
 
 SUITES := $(notdir $(wildcard test/test_*))
 
-.PHONY: test clean render golden hal-syntax $(addprefix test-,$(SUITES))
+.PHONY: test clean render golden hal-syntax bom $(addprefix test-,$(SUITES))
 
 test: $(addprefix test-,$(SUITES))
 	@echo ""
@@ -91,3 +91,8 @@ hal-syntax:
 	    -fno-fast-math -fno-finite-math-only \
 	    -Isrc -I$(STUBS) $(HAL_SRC)
 	@echo "Couche materielle : syntaxe OK (ne remplace pas pio run -e esp32s3)."
+
+# Valide les nomenclatures et produit les fichiers réduits à téléverser sur
+# Octopart, TrustedParts ou FindChips.
+bom:
+	python3 tools/bom_check.py --emit-upload

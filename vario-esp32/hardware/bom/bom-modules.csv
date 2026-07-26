@@ -1,0 +1,10 @@
+Designator,Quantity,Manufacturer,MPN,Description,Fonction,Source,Resoluble sur Octopart
+M1,1,Waveshare,ESP32-S3-Zero,"Carte ESP32-S3 23.5x18 mm, USB-C natif",Calculateur,Waveshare / AliExpress,non
+M2,1,generique,GY-63,"Module MS5611 sur carte de decoupe I2C/SPI",Barometre,AliExpress / LCSC,non
+M3,1,generique,GY-521,"Module MPU-6050 sur carte de decoupe I2C",Assiette,AliExpress / LCSC,non
+M4,1,Adafruit,4694,"Carte de decoupe Sharp Memory LCD 2.7 pouces",Affichage,Adafruit / Mouser,partiel
+M5,1,generique,TP4056,"Module de charge LiPo avec protection DW01A",Charge batterie,AliExpress / LCSC,non
+M6,1,generique,DS3231 mini,"Module horloge DS3231 avec pile",Horloge,AliExpress / LCSC,non
+BT1,1,generique,LiPo 1S 1500 mAh,"Accumulateur lithium-polymere protege, connecteur JST-PH",Energie,fournisseur local,non
+LS1,1,generique,disque piezo 20 mm,"Disque piezoelectrique large bande",Buzzer,AliExpress,non
+SW1,3,generique,bouton tactile 6 mm,"Bouton tactile traversant + capuchon silicone",Commande,AliExpress,non

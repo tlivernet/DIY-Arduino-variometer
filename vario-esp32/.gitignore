@@ -6,7 +6,10 @@
 # Lanceur de tests hors-ligne
 build/
 
-# KiCad (étape P4)
+# Nomenclatures : les fichiers de téléversement sont dérivés
+hardware/bom/*-upload.csv
+
+# KiCad (étape P7)
 *-backups/
 fp-info-cache
 *.kicad_prl

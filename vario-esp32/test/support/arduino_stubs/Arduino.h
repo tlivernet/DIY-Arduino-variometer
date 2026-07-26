@@ -18,11 +18,17 @@
 
 inline void pinMode(int, int) {}
 inline void digitalWrite(int, int) {}
-inline int digitalRead(int) { return HIGH; }
+inline int digitalRead(int) {
+  return HIGH;
+}
 inline void delay(unsigned long) {}
 inline void delayMicroseconds(unsigned int) {}
-inline unsigned long millis() { return 0; }
-inline std::uint32_t analogReadMilliVolts(int) { return 0; }
+inline unsigned long millis() {
+  return 0;
+}
+inline std::uint32_t analogReadMilliVolts(int) {
+  return 0;
+}
 inline void analogSetPinAttenuation(int, int) {}
 
 class HardwareSerial {
@@ -36,5 +42,7 @@ class HardwareSerial {
   template <typename T>
   void print(T, int) {}
   int printf(const char*, ...) { return 0; }
+  int available() { return 0; }
+  int read() { return -1; }
 };
 extern HardwareSerial Serial;

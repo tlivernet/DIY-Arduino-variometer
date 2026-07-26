@@ -10,14 +10,18 @@
 #include "core/flight_fsm.h"
 #include "core/isa.h"
 #include "core/kalman.h"
+#include "core/raw_frame.h"
 #include "core/stats.h"
 #include "core/tone_scheduler.h"
 #include "core/vario_filter.h"
 #include "hal/audio_ledc.h"
+#include "hal/ble_uart.h"
+#include "hal/config_store.h"
 #include "hal/display_sharp.h"
 #include "hal/inputs.h"
 #include "hal/mpu6050.h"
 #include "hal/ms5611.h"
+#include "hal/wifi_portal.h"
 #include "ui/canvas.h"
 #include "ui/screens.h"
 
@@ -65,6 +69,18 @@ class VarioApp {
   // Dernier état publié.
   bool latestState(VarioState& out) const;
 
+  // Ouvre ou ferme le portail Wi-Fi de configuration. Le portail est
+  // volontairement à la demande : il n'a pas à tourner en vol, où il ne ferait
+  // que consommer de l'énergie et occuper la radio.
+  void setPortal(bool on);
+  bool portalOpen() const { return portal_open_; }
+
+  // Active ou coupe l'émission des trames brutes sur l'USB (harnais de rejeu,
+  // étape P5). Une fois active, la tâche capteurs écrit une ligne CSV par trame
+  // sur Serial, à ~100 Hz. À enclencher depuis la commande série « r ».
+  void setRecording(bool on);
+  bool recording() const { return recording_; }
+
   const Config& config() const { return config_; }
 
  private:
@@ -72,10 +88,12 @@ class VarioApp {
   static void sensorTaskEntry(void* arg);
   static void audioTaskEntry(void* arg);
   static void uiTaskEntry(void* arg);
+  static void radioTaskEntry(void* arg);
 
   void sensorLoop();
   void audioLoop();
   void uiLoop();
+  void radioLoop();
 
   // Fenêtre d'alignement à l'arrêt : mesure la direction de la pesanteur et le
   // biais du gyromètre. Comme le bas estimé est DÉFINI comme la direction
@@ -95,6 +113,10 @@ class VarioApp {
   hal::ButtonInputs buttons_io_;
   hal::BatterySense battery_;
 
+  hal::ConfigStore store_;
+  hal::WifiPortal portal_{config_};
+  hal::BleUart ble_;
+
   AttitudeFilter attitude_;
   VarioKalman kalman_;
   AudioGate audio_gate_;
@@ -112,6 +134,16 @@ class VarioApp {
 
   void* state_queue_ = nullptr;  // QueueHandle_t, gardé opaque dans l'en-tête
   bool sensors_ok_ = false;
+
+  // Émission des trames brutes sur l'USB. volatile parce que le drapeau est
+  // basculé depuis loop() (cœur 0) et lu par la tâche capteurs (cœur 1) ; un
+  // simple bool suffit, l'écriture d'un bool étant atomique sur ESP32 et aucune
+  // cohérence multi-champ n'étant en jeu.
+  volatile bool recording_ = false;
+
+  // Demande d'ouverture/fermeture du portail, basculée hors de la tâche radio
+  // et lue par elle. Même raisonnement que recording_ : un bool, atomique.
+  volatile bool portal_open_ = false;
 };
 
 }  // namespace vario::app

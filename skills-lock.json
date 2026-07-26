@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "jlcpcb": {
+      "source": "aklofas/kicad-happy",
+      "sourceType": "github",
+      "skillPath": "skills/jlcpcb/SKILL.md",
+      "computedHash": "e30dad1cb29517a78af6517ef4a3d955c65b79574b602ae4ac5fbd4089480690"
+    }
+  }
+}

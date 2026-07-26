@@ -9,19 +9,43 @@ Chaque étape est livrable et vérifiable indépendamment.
 | **P2** | Couche d'affichage 400×240, quatre écrans, tests par images de référence | ✅ fait |
 | **P3** | Journal de vol, table de schéma des réglages, trames LK8EX1, boutons | ✅ fait |
 | **P4** | Pilotes matériel : MS5611, centrale inertielle, écran Sharp, son, boutons. Tâches FreeRTOS | ✅ écrit et **compile** |
-| **P5** | Harnais de rejeu : enregistrement des trames brutes en USB, rejeu en test | à venir |
-| **P6** | Portail Wi-Fi de configuration, BLE vers XCTrack | à venir |
-| **P7** | Circuit imprimé KiCad et sorties de fabrication | à venir |
-| **P8** | Boîtier paramétrique OpenSCAD | à venir |
+| **P5** | Harnais de rejeu : enregistrement des trames brutes en USB, rejeu en test | ✅ fait |
+| **P6** | Portail Wi-Fi de configuration, BLE vers XCTrack | ✅ cœur **testé**, périphérie **écrite et compile** |
+| **P7** | Circuit imprimé KiCad et sorties de fabrication | 🚧 schéma + PCB routé (auto) + Gerbers JLCPCB, **relecture humaine à faire** |
+| **P8** | Boîtier paramétrique OpenSCAD | 🚧 brouillon rendu, à figer sur le PCB |
 | **P9** | Documentation de montage illustrée | à venir |
 
 ## Ce qui reste faisable sans matériel
 
-Le cœur logiciel est terminé. Restent :
+Le cœur logiciel est terminé. Le **harnais de rejeu** (P5) l'est aussi : format
+de trame brute, émission USB, enregistrement, rejeu natif et tests (dont le
+silence au repos).
 
-- le **harnais de rejeu** (P5), dont la partie test est écrivable dès maintenant ;
-- l'**interface web** de configuration, dont la page se dessine depuis la table de schéma ;
-- cette **documentation**.
+Le **portail de configuration** (P6) est fait côté logiciel : la page web se
+dessine depuis la table de schéma, et sa production (schéma + valeurs en JSON) et
+son application (POST JSON borné) sont du cœur pur, couverts par des tests. Le
+transport — point d'accès Wi-Fi, serveur HTTP, service BLE Nordic UART émettant
+les trames LK8EX1, persistance NVS — est écrit et **compile** contre les talons,
+mais ne peut être validé que sur le matériel (voir la recette).
+
+Reste, sans matériel : cette **documentation**.
+
+## Matériel : schéma et boîtier
+
+Le **schéma KiCad** (P7) de la variante intégrée est engendré depuis une table
+de connexions et validé électriquement — ERC propre, netlist exportable,
+brochages vérifiés contre les bibliothèques KiCad et, pour l'élévateur, contre
+son datasheet. Le **circuit imprimé** est ensuite engendré, placé et **routé
+automatiquement** (freerouting, ~85 nets sur 86), et les **Gerbers + BOM + CPL
+JLCPCB** sont exportés. Détail dans [Circuit imprimé](pcb.md). Reste une
+**relecture humaine dans KiCad** avant commande : le routage auto passe le DRC
+mais ne garantit ni le plan de masse, ni la zone d'antenne, ni la paire USB.
+
+Le **boîtier** (P8) est un modèle OpenSCAD paramétrique dont les deux coquilles
+se rendent en STL et en aperçu (`make case`). C'est un **brouillon** : ses cotes
+dépendent du PCB, qui n'est pas encore tracé, et il n'a ni support de cartes ni
+logement défini pour le piézo. Il sera repris une fois le circuit figé — voir
+[Boîtier](boitier.md).
 
 ## Ce qui exige le matériel en main
 

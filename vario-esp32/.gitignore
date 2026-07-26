@@ -18,11 +18,15 @@ fp-info-cache
 *.kicad_pcb-bak
 *.kicad_sch-bak
 
-# OpenSCAD (étape P5)
-case/build/
+# Autorouteur freerouting (55 Mo, téléchargé à la demande, non versionné)
+freerouting.jar
+
+# OpenSCAD (étape P8) : STL et aperçus engendrés par `make case`
+# vont dans build/, déjà ignoré ci-dessus.
 
 # Éditeurs
 .vscode/
 .idea/
 *.swp
 .DS_Store
+*.lck

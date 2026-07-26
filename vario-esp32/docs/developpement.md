@@ -79,6 +79,79 @@ make golden
 
 À ne jamais lancer pour faire taire un test sans avoir examiné l'image obtenue.
 
+### Harnais de rejeu
+
+C'est le meilleur investissement du projet pour un appareil dont la justesse se
+définit par une physique qu'on ne peut pas reproduire sur un bureau. Le principe :
+le firmware émet les trames brutes — horodatage, accéléromètre, gyromètre,
+pression, température — sur l'USB à ~100 Hz (≈ 4 ko/s, rien pour de l'USB natif),
+un script les enregistre en CSV, et le rejoue les fait passer **à travers toute
+la chaîne d'estimation** en natif.
+
+Conséquence : chaque comportement bizarre constaté en vol devient un
+enregistrement de 30 s, qui devient un fichier de référence versionné, qui
+devient un test de non-régression permanent. Le réglage du filtre se fait alors
+sur dix vrais vols en une seconde sur un portable.
+
+**Enregistrer un vol.** On branche la carte, on lance le firmware, puis :
+
+```bash
+tools/record.py --port /dev/ttyACM0 --seconds 30 -o traces/vol.csv
+```
+
+Le script envoie la commande `r` au firmware (qui bascule alors en émission de
+trames brutes) et enregistre le flux. `pyserial` est la seule dépendance, et
+seulement pour cette acquisition.
+
+**Rejouer.** Le rejoue est du C++17 pur, sans dépendance :
+
+```bash
+make replay TRACE=traces/vol.csv
+```
+
+Il écrit la trace estimée (altitude, vitesse verticale, son) sur la sortie
+standard. Ordre des opérations **identique** à `VarioApp::sensorLoop()` : toute
+divergence entre le rejoue et le firmware est un bug à corriger, pas une liberté.
+
+**Tests.** `test/test_replay` couvre l'aller-retour CSV du format de trame et
+rejoue des vols synthétiques cohérents — dont le critère phare, le **silence au
+repos** : trente secondes posé sur une table, aucun son et vario affiché sous
+0,05 m/s. C'est le test que le montage de 2017 échouait.
+
+### Portail de configuration (P6)
+
+Le portail Wi-Fi remplace l'édition à l'encodeur pour les réglages fins : on
+ouvre le point d'accès `Variometre`, on s'y connecte avec un téléphone, et une
+page unique liste tous les réglages.
+
+Le principe est le même que pour le menu embarqué : **la table de schéma
+(`config_schema`) est la source unique**. La page ne code aucun réglage en dur —
+au chargement elle interroge `GET /config`, reçoit le schéma et les valeurs en
+JSON (`configToJson`) et se dessine elle-même ; l'enregistrement renvoie un
+`POST /config` que le firmware applique champ par champ via `setConfigValue`,
+donc borné (`applyJsonToConfig`). Ajouter un réglage reste une seule ligne dans
+`kFields`.
+
+Tout cela est du cœur pur, testé sans matériel (`test/test_config_json`) :
+sérialisation fidèle, application bornée, tolérance aux clés inconnues (un client
+plus récent ne casse pas un firmware plus ancien), aller-retour stable, et page
+autonome (aucune ressource distante). Le transport — point d'accès, serveur HTTP,
+persistance NVS — n'est que la fine couche `hal/` autour.
+
+Côté firmware, une **tâche radio sur le cœur 0** gère le portail et le BLE, à
+l'écart du temps réel du son : ouvrir le portail ne fait pas hoqueter les bips.
+Les réglages sont relus de la flash au démarrage (`hal/config_store`, via NVS,
+clé par clé — une clé absente rend son défaut, donc aucune migration à écrire) et
+réécrits à chaque enregistrement.
+
+### BLE vers XCTrack (P6)
+
+L'appareil expose le **Nordic UART Service** et y pousse une trame **LK8EX1** par
+seconde (`hal/ble_uart`). XCTrack, XCSoar et LK8000 s'en servent alors comme
+capteur de pression et de vitesse verticale. On envoie la pression **brute** et
+on laisse l'altitude au téléphone : un seul QNH, pas de deux altitudes
+divergentes. Le formatage de la trame (`core/lk8ex1`) est testé depuis P3.
+
 ## Intégration continue
 
 Trois tâches, à chaque modification :
@@ -109,6 +182,6 @@ Pas de partition de mise à jour à distance : on flashe par USB natif, et la pl
 
 ## État d'avancement
 
-Ce qui a **réellement été exécuté et vérifié** : les 166 tests natifs et le rendu des écrans.
+Ce qui a **réellement été exécuté et vérifié** : les 172 tests natifs (dont le harnais de rejeu), le rejeu d'une trace de démonstration et le rendu des écrans.
 
 Ce qui n'a **pas** été vérifié : la compilation du firmware pour l'ESP32-S3. Le registre PlatformIO n'était pas joignable depuis l'environnement de développement utilisé, la tâche d'intégration continue en sera le premier test réel. Aucun code matériel n'existe encore, et rien n'a volé.

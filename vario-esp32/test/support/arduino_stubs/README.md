@@ -19,3 +19,12 @@ incohérences internes.
 
 Un talon qui diverge de l'API réelle donne un faux sentiment de sécurité. Ces
 fichiers ne remplacent pas `pio run -e esp32s3`, ils le précèdent.
+
+## Talons présents
+
+Outre les périphériques de base (GPIO, I2C, SPI, LEDC, minuterie, FreeRTOS), les
+briques réseau de P6 : `Preferences.h` (NVS), `WiFi.h` et `WebServer.h` (portail
+de configuration), et la pile BLE (`BLEDevice.h` et ses en-têtes satellites
+`BLEServer.h`, `BLEUtils.h`, `BLE2902.h`). Ces API sont fournies par le cœur
+Arduino-ESP32 sur la cible ; aucune dépendance externe à déclarer dans
+`platformio.ini`.

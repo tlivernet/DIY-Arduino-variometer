@@ -25,12 +25,30 @@ void setup() {
 }
 
 void loop() {
+  // Commandes série : « r » démarre l'émission des trames brutes (harnais de
+  // rejeu, à enregistrer avec tools/record.py), « s » l'arrête.
+  while (Serial.available() > 0) {
+    const int c = Serial.read();
+    if (c == 'r' || c == 'R') {
+      g_app.setRecording(true);
+    } else if (c == 's' || c == 'S') {
+      g_app.setRecording(false);
+    } else if (c == 'w' || c == 'W') {
+      g_app.setPortal(true);
+      Serial.println(F("Portail Wi-Fi ouvert : reseau \"Variometre\""));
+    } else if (c == 'x' || c == 'X') {
+      g_app.setPortal(false);
+      Serial.println(F("Portail Wi-Fi ferme"));
+    }
+  }
+
   // Les tâches font le travail. Ici, seulement du diagnostic sur le port série,
-  // une fois par seconde.
+  // une fois par seconde — mais pas pendant un enregistrement, pour ne pas
+  // polluer le flux CSV.
   static std::uint32_t last_report_ms = 0;
   const std::uint32_t now_ms = millis();
 
-  if (now_ms - last_report_ms >= 1000) {
+  if (!g_app.recording() && now_ms - last_report_ms >= 1000) {
     last_report_ms = now_ms;
 
     vario::app::VarioState state;

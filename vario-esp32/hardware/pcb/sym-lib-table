@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "vario-symbols")(type "KiCad")(uri "${KIPRJMOD}/vario-symbols.kicad_sym")(options "")(descr "Symboles propres au variometre (pieces absentes des bibliotheques systeme)"))
+)

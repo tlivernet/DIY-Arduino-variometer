@@ -18,13 +18,21 @@ namespace {
 constexpr int kSensorPeriodMs = 2;  // 500 Hz
 constexpr int kAudioPeriodMs = 5;   // quantifie les notes à 5 ms, inaudible
 constexpr int kUiPeriodMs = 100;    // 10 Hz
+constexpr int kRadioPeriodMs = 20;  // 50 Hz : sert le HTTP sans latence sensible
 
-// Cœurs et priorités : tout le temps réel sur le cœur 1, la radio restera sur
-// le cœur 0.
+// Une trame LK8EX1 par seconde suffit à XCTrack : c'est la cadence qu'il
+// attend, et cela épargne la radio.
+constexpr int kBlePeriodMs = 1000;
+
+// Cœurs et priorités. Tout le temps réel est sur le cœur 1 ; la radio (Wi-Fi et
+// BLE) est sur le cœur 0, où vit sa pile et où elle peut bloquer longuement sans
+// jamais faire hoqueter le son.
 constexpr int kRealtimeCore = 1;
+constexpr int kRadioCore = 0;
 constexpr int kSensorPriority = 10;
 constexpr int kAudioPriority = 9;
 constexpr int kUiPriority = 5;
+constexpr int kRadioPriority = 4;
 
 Micros nowMicros() {
   return static_cast<Micros>(esp_timer_get_time());
@@ -79,6 +87,10 @@ bool VarioApp::alignAtRest() {
 }
 
 bool VarioApp::begin() {
+  // Réglages relus depuis la flash AVANT tout : ils pilotent seuils, QNH,
+  // profil de son, volume. Une première mise en route sans réglages stockés
+  // garde simplement les défauts.
+  store_.load(config_);
   clampConfig(config_);
 
   Wire.begin(pins::kI2cSda, pins::kI2cScl, pins::kI2cFrequency);
@@ -118,7 +130,27 @@ bool VarioApp::begin() {
   xTaskCreatePinnedToCore(uiTaskEntry, "ui", 6144, this, kUiPriority, nullptr,
                           kRealtimeCore);
 
+  // Tâche radio sur le cœur 0 : elle gère le BLE (émission LK8EX1) et, à la
+  // demande, le portail Wi-Fi. Isolée du temps réel du son par le cœur.
+  xTaskCreatePinnedToCore(radioTaskEntry, "radio", 8192, this, kRadioPriority, nullptr,
+                          kRadioCore);
+
   return sensors_ok_;
+}
+
+void VarioApp::setPortal(bool on) {
+  // On délègue l'ouverture/fermeture effective à la tâche radio : Wi-Fi et
+  // serveur HTTP doivent démarrer sur le cœur 0. Ici on ne fait que poser
+  // l'intention.
+  portal_open_ = on;
+}
+
+void VarioApp::setRecording(bool on) {
+  if (on && !recording_) {
+    // En-tête en tête de flux, pour que record.py écrive un CSV autonome.
+    Serial.println(kRawFrameCsvHeader);
+  }
+  recording_ = on;
 }
 
 void VarioApp::publish(const VarioState& state) {
@@ -142,6 +174,9 @@ void VarioApp::audioTaskEntry(void* arg) {
 void VarioApp::uiTaskEntry(void* arg) {
   static_cast<VarioApp*>(arg)->uiLoop();
 }
+void VarioApp::radioTaskEntry(void* arg) {
+  static_cast<VarioApp*>(arg)->radioLoop();
+}
 
 void VarioApp::sensorLoop() {
   TickType_t last_wake = xTaskGetTickCount();
@@ -150,11 +185,20 @@ void VarioApp::sensorLoop() {
   for (;;) {
     const Micros now = nowMicros();
 
+    // Trame brute, remplie au fil des lectures et émise en fin d'itération si
+    // l'enregistrement est actif.
+    RawFrame frame;
+    frame.timestamp = now;
+    bool imu_read = false;
+
     if (sensors_ok_) {
       // 1. Centrale inertielle, à chaque tick.
       Vec3 accel;
       Vec3 gyro;
       if (imu_.read(accel, gyro)) {
+        imu_read = true;
+        frame.accel = accel;
+        frame.gyro = gyro;
         const float dt_s = toSeconds(now - last_imu);
         last_imu = now;
         attitude_.update(accel, gyro, dt_s);
@@ -165,9 +209,22 @@ void VarioApp::sensorLoop() {
       // main. Le résultat arrive une dizaine de millisecondes plus tard, sans
       // que rien n'ait attendu.
       if (baro_.service(now)) {
+        frame.has_baro = true;
+        frame.pressure_hpa = baro_.pressureHpa();
+        frame.temperature_c = baro_.temperatureC();
         const float altitude = pressureToAltitude(config_.qnh_hpa, baro_.pressureHpa()) +
                                config_.altitude_offset_m;
         kalman_.update(altitude);
+      }
+    }
+
+    // Émission de la trame brute pour le harnais de rejeu. On n'émet que les
+    // trames où la centrale a effectivement fourni un échantillon : une ligne
+    // sans accéléromètre n'aurait aucun sens au rejeu.
+    if (recording_ && imu_read) {
+      char csv[160];
+      if (formatRawFrame(csv, sizeof(csv), frame) > 0) {
+        Serial.println(csv);
       }
     }
 
@@ -248,6 +305,64 @@ void VarioApp::uiLoop() {
     }
 
     vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(kUiPeriodMs));
+  }
+}
+
+void VarioApp::radioLoop() {
+  TickType_t last_wake = xTaskGetTickCount();
+  std::uint32_t last_ble_ms = 0;
+  bool ble_started = false;
+
+  for (;;) {
+    // 1. BLE : suit le réglage. On démarre la pile à la première demande et on
+    //    la coupe si l'utilisateur désactive le Bluetooth, pour l'énergie.
+    if (config_.ble_enabled && !ble_started) {
+      ble_.begin();
+      ble_started = true;
+    } else if (!config_.ble_enabled && ble_started) {
+      ble_.end();
+      ble_started = false;
+    }
+
+    // 2. Portail Wi-Fi : ouvert/fermé à la demande (portal_open_).
+    if (portal_open_ && !portal_.running()) {
+      portal_.begin();
+    } else if (!portal_open_ && portal_.running()) {
+      portal_.end();
+    }
+    if (portal_.running()) {
+      portal_.handle();
+      // Un réglage enregistré via la page : on le persiste et on répercute dans
+      // les filtres, sans quoi le changement ne prendrait effet qu'au redémarrage.
+      if (portal_.takeDirty()) {
+        clampConfig(config_);
+        store_.save(config_);
+        attitude_.config().trim_speed_ms = config_.trim_speed_ms;
+        tones_.config().climb_threshold_ms = config_.climb_threshold_ms;
+        tones_.config().sink_threshold_ms = config_.sink_threshold_ms;
+        tones_.config().profile = config_.tone_profile;
+      }
+    }
+
+    // 3. Émission LK8EX1 à ~1 Hz, depuis le dernier état publié.
+    const std::uint32_t now_ms = millis();
+    if (ble_started && now_ms - last_ble_ms >= kBlePeriodMs) {
+      last_ble_ms = now_ms;
+      VarioState state;
+      if (latestState(state)) {
+        Lk8ex1Data frame;
+        frame.pressure_pa = state.pressure_hpa * 100.0f;
+        frame.vario_ms = state.vario_audio_ms;
+        frame.temperature_c = state.temperature_c;
+        frame.battery_percent =
+            static_cast<int>(100.0f * batteryFraction(battery_.smoothedVolts(
+                                          static_cast<float>(kBlePeriodMs) / 1000.0f)));
+        frame.pressure_valid = state.sensors_ok;
+        ble_.publish(frame);
+      }
+    }
+
+    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(kRadioPeriodMs));
   }
 }
 

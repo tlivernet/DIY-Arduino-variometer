@@ -26,7 +26,7 @@ UNITY_FLAGS := -std=gnu++17 -O1 -g -Itest/support/unity -w
 
 SUITES := $(notdir $(wildcard test/test_*))
 
-.PHONY: test clean render golden hal-syntax bom $(addprefix test-,$(SUITES))
+.PHONY: test clean render golden hal-syntax bom doctor setup $(addprefix test-,$(SUITES))
 
 test: $(addprefix test-,$(SUITES))
 	@echo ""
@@ -96,3 +96,11 @@ hal-syntax:
 # Octopart, TrustedParts ou FindChips.
 bom:
 	python3 tools/bom_check.py --emit
+
+# Dresse l'état de l'environnement de développement.
+doctor:
+	@./tools/doctor.sh
+
+# Installation guidée des outils manquants.
+setup:
+	@./tools/setup-linux.sh

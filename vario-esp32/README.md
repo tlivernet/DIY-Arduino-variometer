@@ -49,6 +49,15 @@ Deux techniques rendent l'essentiel vérifiable sur un PC :
 - **trajectoires synthétiques** — accéléromètre, gyromètre et pression dérivés d'une même vérité terrain. Le jeu décisif est le virage coordonné établi : vitesse verticale vraie nulle mais facteur de charge de `g/cos φ`, situation où un vario naïf annonce une fausse montée de 1,5 m/s ;
 - **images de référence** — les écrans sont rendus puis comparés octet par octet à des PBM versionnés.
 
+## Installer l'environnement
+
+```bash
+./tools/doctor.sh          # ce qui manque, et pour quelle étape
+./tools/setup-linux.sh     # installation guidée (--dry-run pour voir sans agir)
+```
+
+Pour seulement lancer les tests, trois paquets suffisent : `build-essential`, `git`, `python3`. Détail par usage dans [`docs/environnement.md`](docs/environnement.md).
+
 ## Compiler et tester
 
 ```bash

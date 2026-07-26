@@ -1,0 +1,59 @@
+site_name: Variomètre ESP32
+site_description: Variomètre de parapente open source et open hardware, refonte du projet Arduino de 2017
+site_url: https://tlivernet.github.io/vario-esp32/
+docs_dir: docs
+site_dir: build/site
+use_directory_urls: true
+
+theme:
+  name: material
+  language: fr
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Passer au thème sombre
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Passer au thème clair
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - toc.follow
+
+nav:
+  - Présentation: index.md
+  - Pourquoi une refonte: pourquoi.md
+  - Matériel: materiel.md
+  - Écrans: ecrans.md
+  - Algorithmes: algorithmes.md
+  - Développement: developpement.md
+  - Feuille de route: feuille-de-route.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.details
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/tlivernet/DIY-Arduino-variometer
+      name: Le dépôt du projet

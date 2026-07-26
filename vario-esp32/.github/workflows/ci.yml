@@ -74,3 +74,35 @@ jobs:
           find src test -name '*.cpp' -o -name '*.h' \
             | grep -v test/support/unity \
             | xargs clang-format --dry-run --Werror
+
+  # Documentation. --strict fait échouer la construction sur un lien interne
+  # cassé : c'est le seul moyen pour qu'une doc reste juste dans le temps.
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer MkDocs
+        run: pip install mkdocs-material
+
+      # Les captures d'écran de la doc sont engendrées par le firmware
+      # lui-même : elles ne peuvent donc pas se désynchroniser du code.
+      - name: Régénérer les écrans
+        working-directory: vario-esp32
+        run: |
+          make render
+          cp build/screens/*.png docs/images/
+
+      - name: Construire le site
+        working-directory: vario-esp32
+        run: mkdocs build --strict
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: vario-esp32/build/site

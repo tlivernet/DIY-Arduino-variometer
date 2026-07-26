@@ -95,4 +95,4 @@ hal-syntax:
 # Valide les nomenclatures et produit les fichiers réduits à téléverser sur
 # Octopart, TrustedParts ou FindChips.
 bom:
-	python3 tools/bom_check.py --emit-upload
+	python3 tools/bom_check.py --emit

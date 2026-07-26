@@ -2,10 +2,20 @@
 
 Deux nomenclatures, pour deux usages différents.
 
-| Fichier | Contenu | À téléverser sur |
+| Fichier | Contenu | Rôle |
 |---|---|---|
-| `bom-composants.csv` | composants unitaires de la variante B (PCB intégré) | **Octopart, TrustedParts, FindChips** |
-| `bom-modules.csv` | modules du commerce de la variante A | rien — voir ci-dessous |
+| `bom-composants.csv` | composants unitaires de la variante B (PCB intégré) | **source de vérité** |
+| `bom-modules.csv` | modules du commerce de la variante A | **source de vérité** |
+
+Les fichiers ci-dessous sont **engendrés** par `make bom` et absents du dépôt. Chaque distributeur veut ses colonnes, et entretenir quatre copies d'une même nomenclature garantit qu'elles finissent par diverger.
+
+| Fichier engendré | À téléverser sur |
+|---|---|
+| `*-upload.csv` | Octopart, TrustedParts, FindChips |
+| `*-lcsc.csv` | LCSC (jusqu'à 800 lignes, 4 Mo) |
+| `bom-composants-jlcpcb.csv` | JLCPCB, pour l'assemblage |
+
+**AliExpress n'accepte aucun fichier** : c'est une place de marché grand public, sans outil de nomenclature ni interface de programmation ouverte. Voir la [page Où acheter](../../docs/achats.md) pour la liste de courses manuelle et les contrôles anti-contrefaçon.
 
 ## Pourquoi deux fichiers
 
@@ -16,14 +26,13 @@ La nomenclature de la variante A ne s'y résoudra donc quasiment pas : un « GY-
 ## Utilisation
 
 ```bash
-# Valider avant tout envoi
-python3 ../../tools/bom_check.py
-
-# Produire les fichiers réduits aux trois colonnes attendues
-python3 ../../tools/bom_check.py --emit-upload
+make bom                          # valide et engendre tous les formats
+python3 tools/bom_check.py        # valide seulement
 ```
 
-Les fichiers `*-upload.csv` ne contiennent que `MPN, Manufacturer, Quantity`. Les trois outils se contentent de cela, et fournir le strict nécessaire évite qu'une colonne mal interprétée fasse échouer l'appariement. Les fichiers riches restent la source de vérité, avec les repères, les boîtiers et la fonction de chaque pièce.
+Le format générique ne contient que `MPN, Manufacturer, Quantity` : les trois agrégateurs se contentent de cela, et fournir le strict nécessaire évite qu'une colonne mal interprétée fasse échouer l'appariement.
+
+Dans les formats LCSC et JLCPCB, la colonne de **référence LCSC est laissée vide à dessein**. Ces références en `C…` ne peuvent pas être devinées, et en inventer une ferait commander la mauvaise pièce sans que rien ne le signale : l'outil de LCSC la remplit lui-même depuis la référence fabricant. Le fichier JLCPCB est de plus incomplet par nature à ce stade, les empreintes définitives n'étant connues qu'avec le schéma KiCad — il fige le format, il ne sert pas à passer commande.
 
 Le validateur refuse une référence vide, un fabricant vide, une quantité non entière, un repère dupliqué, et signale les caractères non ASCII qui passent mal dans certains téléversements.
 

@@ -8,6 +8,8 @@ build/
 
 # Nomenclatures : les fichiers de téléversement sont dérivés
 hardware/bom/*-upload.csv
+hardware/bom/*-lcsc.csv
+hardware/bom/*-jlcpcb.csv
 
 # KiCad (étape P7)
 *-backups/

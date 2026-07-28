@@ -24,6 +24,10 @@ freerouting.jar
 # OpenSCAD (étape P8) : STL et aperçus engendrés par `make case`
 # vont dans build/, déjà ignoré ci-dessus.
 
+# Python
+__pycache__/
+*.pyc
+
 # Éditeurs
 .vscode/
 .idea/

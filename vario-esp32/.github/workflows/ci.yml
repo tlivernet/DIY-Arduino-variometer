@@ -57,6 +57,12 @@ jobs:
         working-directory: vario-esp32
         run: python3 tools/bom_check.py
 
+      # Un plan de câblage qui diverge du firmware fait souder les mauvaises
+      # broches, et le symptôme ressemble à un composant défectueux.
+      - name: Vérifier le brochage
+        working-directory: vario-esp32
+        run: python3 tools/check_pinout.py
+
       # Rend les écrans en PNG et les publie : une régression de mise en page
       # se constate à l'œil dans les artefacts de la CI.
       - name: Rendre les écrans

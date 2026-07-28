@@ -1,0 +1,36 @@
+Bloc,Broche module,Signal,GPIO,Direction,Remarque
+ESP32-S3-Zero,5V,VBUS,,alim,"entrée 3.7-6 V ; reliée à la sortie du TP4056"
+ESP32-S3-Zero,3V3,3V3,,alim,"sortie du régulateur de la carte ; alimente baro, IMU, horloge"
+ESP32-S3-Zero,GND,GND,,alim,"plan de masse commun"
+GY-63 (MS5611),VCC,3V3,,alim,
+GY-63 (MS5611),GND,GND,,alim,
+GY-63 (MS5611),SDA,I2C_SDA,8,bidir,"tirage au plus 4k7 sur la carte porteuse"
+GY-63 (MS5611),SCL,I2C_SCL,9,sortie,"tirage au plus 4k7 sur la carte porteuse"
+GY-63 (MS5611),CSB,GND,,alim,"CSB au niveau bas => adresse I2C 0x77"
+GY-521 (IMU),VCC,3V3,,alim,"le régulateur du GY-521 accepte 3.3 V en direct"
+GY-521 (IMU),GND,GND,,alim,
+GY-521 (IMU),SDA,I2C_SDA,8,bidir,
+GY-521 (IMU),SCL,I2C_SCL,9,sortie,
+GY-521 (IMU),AD0,GND,,alim,"AD0 au niveau bas => adresse I2C 0x68"
+GY-521 (IMU),INT,IMU_INT,7,entrée,"non utilisé par le pilote actuel ; câblé pour plus tard"
+DS3231,VCC,3V3,,alim,
+DS3231,GND,GND,,alim,
+DS3231,SDA,I2C_SDA,8,bidir,
+DS3231,SCL,I2C_SCL,9,sortie,
+Sharp LS027B7DH01,VIN,5V,,alim,"caractérisé à 5 V ; fonctionne à 3.3 V avec un contraste réduit"
+Sharp LS027B7DH01,GND,GND,,alim,
+Sharp LS027B7DH01,CLK,DISP_SCLK,12,sortie,"1 MHz"
+Sharp LS027B7DH01,DI,DISP_MOSI,11,sortie,
+Sharp LS027B7DH01,CS,DISP_CS,10,sortie,"ACTIF A L'ETAT HAUT ; piloté en GPIO simple"
+Sharp LS027B7DH01,DISP,DISP_ON,13,sortie,"peut être relié à 3V3 en permanence pour libérer le GPIO"
+Sharp LS027B7DH01,EXTCOMIN,DISP_VCOM,14,sortie,"peut être relié à GND si on utilise le VCOM logiciel"
+Piezo,borne 1,BUZZ_A,1,sortie,"via tampon 74HCT125 alimenté en 5 V"
+Piezo,borne 2,BUZZ_B,2,sortie,"via tampon 74HCT125, voie inversée"
+Bouton HAUT,contact,BTN_UP,4,entrée,"vers GND ; tirage au plus interne"
+Bouton VALIDER,contact,BTN_OK,5,entrée,"vers GND ; RTC GPIO, réveil possible"
+Bouton BAS,contact,BTN_DOWN,6,entrée,"vers GND ; tirage au plus interne"
+Mesure batterie,point milieu,BAT_SENSE,3,entrée,"diviseur 100k/100k depuis VBAT ; ADC1 obligatoire"
+TP4056,OUT+,VBAT,,alim,"vers l'interrupteur puis 5V de la carte MCU"
+TP4056,OUT-,GND,,alim,
+MT3608 (option 5V),IN+,VBAT,,alim,"élévateur pour l'écran et le tampon audio"
+MT3608 (option 5V),OUT+,5V,,alim,"régler à 5.0 V AVANT de câbler quoi que ce soit"

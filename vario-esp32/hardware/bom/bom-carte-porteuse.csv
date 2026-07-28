@@ -1,0 +1,18 @@
+Designator,Quantity,Manufacturer,MPN,Description,Package,Fonction,Confiance MPN
+J1,2,generique,embase femelle 1x9 2.54mm,"Barrette femelle tulipe, pas 2.54 mm, 9 contacts",THT,Support ESP32-S3-Zero,haute
+J2,1,generique,embase femelle 1x5 2.54mm,"Barrette femelle, pas 2.54 mm, 5 contacts",THT,Support module GY-63 (MS5611),haute
+J3,1,generique,embase femelle 1x8 2.54mm,"Barrette femelle, pas 2.54 mm, 8 contacts",THT,Support module GY-521 (IMU),haute
+J4,1,generique,embase femelle 1x6 2.54mm,"Barrette femelle, pas 2.54 mm, 6 contacts",THT,Support module DS3231,haute
+J5,1,generique,embase femelle 1x8 2.54mm,"Barrette femelle, pas 2.54 mm, 8 contacts",THT,Carte d'adaptation ecran Sharp,haute
+J6,1,generique,embase femelle 1x6 2.54mm,"Barrette femelle, pas 2.54 mm, 6 contacts",THT,Module TP4056,haute
+J7,1,generique,embase femelle 1x4 2.54mm,"Barrette femelle, pas 2.54 mm, 4 contacts",THT,Module elevateur MT3608 (optionnel),haute
+J8,1,JST,B2B-PH-K-S,"Embase 2 voies pas 2.0 mm, droite",PH,Piezo,haute
+U1,1,Texas Instruments,SN74HCT125N,"Quadruple tampon a trois etats, seuils TTL, boitier DIP",DIP-14,Tampon audio 5 V,haute
+SW1,1,Omron,B3F-1052,"Bouton tactile 6x6 mm traversant",THT 6x6,Bouton HAUT,haute
+SW2,1,Omron,B3F-1052,"Bouton tactile 6x6 mm traversant",THT 6x6,Bouton VALIDER,haute
+SW3,1,Omron,B3F-1052,"Bouton tactile 6x6 mm traversant",THT 6x6,Bouton BAS,haute
+SW4,1,C&K,OS102011MA1QN1,"Interrupteur a glissiere SPDT traversant",THT,Marche/arret,haute
+R1,2,Yageo,CFR-25JB-52-4K7,"Resistance 4.7 kOhm 5% 0.25 W traversante",Axial,Tirage au plus I2C,haute
+R3,2,Yageo,CFR-25JB-52-100K,"Resistance 100 kOhm 5% 0.25 W traversante",Axial,Diviseur mesure batterie,haute
+C1,2,Kemet,C320C104K5R5TA,"Condensateur ceramique 100 nF 50 V traversant",Radial,Decouplage,haute
+C3,1,Nichicon,UVR1V101MED,"Condensateur electrolytique 100 uF 35 V",Radial,Reservoir alimentation,haute

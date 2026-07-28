@@ -139,7 +139,8 @@ Le bipeur qui bavarde à l'arrêt, principal défaut d'usage de l'ancien vario, 
 | P4 | Pilotes MS5611, IMU, écran Sharp, audio LEDC ; tâches FreeRTOS | **écrit, compile** |
 | P5 | Harnais de rejeu (trames brutes en USB → CSV → test) | à venir |
 | P6 | Portail Wi-Fi de configuration + BLE vers XCTrack | à venir |
-| P7 | PCB KiCad + gerbers JLCPCB | schéma + PCB **routé** (auto) + Gerbers, relecture humaine à faire |
+| P7a | Carte porteuse (modules interconnectés, ~5 $ les cinq) | câblage défini, vérifié contre le firmware |
+| P7b | PCB intégré CMS + gerbers JLCPCB (pertinent vers 50 ex.) | schéma + PCB **routé** (auto) + Gerbers, relecture humaine à faire |
 | P8 | Boîtier paramétrique OpenSCAD | brouillon rendu, à figer sur le PCB |
 
 ## Antériorité à consulter

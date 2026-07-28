@@ -26,7 +26,7 @@ UNITY_FLAGS := -std=gnu++17 -O1 -g -Itest/support/unity -w
 
 SUITES := $(notdir $(wildcard test/test_*))
 
-.PHONY: test clean render golden replay hal-syntax bom case schematic erc pcb route fab doctor setup $(addprefix test-,$(SUITES))
+.PHONY: test clean render golden replay hal-syntax bom pinout case schematic erc pcb route fab doctor setup $(addprefix test-,$(SUITES))
 
 test: $(addprefix test-,$(SUITES))
 	@echo ""
@@ -175,3 +175,8 @@ doctor:
 # Installation guidée des outils manquants.
 setup:
 	@./tools/setup-linux.sh
+
+# Vérifie que le tableau de câblage de la carte porteuse et src/app/pins.h
+# décrivent le même brochage.
+pinout:
+	python3 tools/check_pinout.py

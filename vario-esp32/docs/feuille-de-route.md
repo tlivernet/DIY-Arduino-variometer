@@ -11,7 +11,8 @@ Chaque étape est livrable et vérifiable indépendamment.
 | **P4** | Pilotes matériel : MS5611, centrale inertielle, écran Sharp, son, boutons. Tâches FreeRTOS | ✅ écrit et **compile** |
 | **P5** | Harnais de rejeu : enregistrement des trames brutes en USB, rejeu en test | ✅ fait |
 | **P6** | Portail Wi-Fi de configuration, BLE vers XCTrack | ✅ cœur **testé**, périphérie **écrite et compile** |
-| **P7** | Circuit imprimé KiCad et sorties de fabrication | 🚧 schéma + PCB routé (auto) + Gerbers JLCPCB, **relecture humaine à faire** |
+| **P7a** | **Carte porteuse** : interconnexion de modules, tout traversant, ~5 $ les cinq | 🚧 câblage défini et **vérifié contre le firmware** |
+| **P7b** | Circuit imprimé intégré CMS et sorties de fabrication | 🚧 schéma + PCB routé (auto) + Gerbers JLCPCB, **relecture humaine à faire** ; pertinent à partir de ~50 exemplaires |
 | **P8** | Boîtier paramétrique OpenSCAD | 🚧 brouillon rendu, à figer sur le PCB |
 | **P9** | Documentation de montage illustrée | à venir |
 
